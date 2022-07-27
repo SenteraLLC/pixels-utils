@@ -6,7 +6,7 @@ from pixels_utils.constants.sentinel2 import (
     EXPRESSION_NDVI,
     SENTINEL_2_L2A_COLLECTION,
 )
-from pixels_utils.tests.conftest import geojson_fixture, sceneid_fixture
+from pixels_utils.tests.conftest import sceneid_aoi1_fixture
 from pixels_utils.utilities import _check_assets_expression, get_assets_expression_query
 
 
@@ -38,18 +38,18 @@ def test_utilities_check_assets_expression_expression():
     expect(expression).to.equal(EXPRESSION_NDVI)
 
 
-def test_get_assets_expression_query_none(sceneid_fixture):
+def test_get_assets_expression_query_none(sceneid_aoi1_fixture):
     scene_url = ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_aoi1_fixture
     )
     get_assets_expression_query.when.called_with(
         scene_url, assets=None, expression=None
     ).should.throw(ValueError, "Either <assets> or <expression> must be passed.")
 
 
-def test_get_assets_expression_query_both(sceneid_fixture):
+def test_get_assets_expression_query_both(sceneid_aoi1_fixture):
     scene_url = ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_aoi1_fixture
     )
     get_assets_expression_query.when.called_with(
         scene_url, assets=ASSETS_MSI, expression=EXPRESSION_NDVI
@@ -58,9 +58,9 @@ def test_get_assets_expression_query_both(sceneid_fixture):
     )
 
 
-def test_get_assets_expression_query_assets(sceneid_fixture):
+def test_get_assets_expression_query_assets(sceneid_aoi1_fixture):
     scene_url = ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_aoi1_fixture
     )
     query, asset_main = get_assets_expression_query(
         scene_url, assets=ASSETS_MSI, expression=None
@@ -78,9 +78,9 @@ def test_get_assets_expression_query_assets(sceneid_fixture):
     asset_main.should.equal(ASSETS_MSI[0])
 
 
-def test_get_assets_expression_query_expression(sceneid_fixture):
+def test_get_assets_expression_query_expression(sceneid_aoi1_fixture):
     scene_url = ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_aoi1_fixture
     )
     query, asset_main = get_assets_expression_query(
         scene_url, assets=None, expression=EXPRESSION_NDVI

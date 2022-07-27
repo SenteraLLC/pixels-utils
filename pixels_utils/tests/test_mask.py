@@ -1,5 +1,9 @@
+import sure
+
 from pixels_utils.constants.sentinel2 import ASSETS_MSI, EXPRESSION_NDVI
 from pixels_utils.mask import SCL, build_numexpr_scl_mask
+
+_ = sure.version
 
 
 class Test_Mask_Build_Numexpr_ASSETS_None_EXPRESSION_None:
