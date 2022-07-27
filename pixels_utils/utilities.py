@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Union
+from typing import Dict, Iterable, Tuple, Union
 
 from requests import get
 
@@ -15,7 +15,9 @@ from pixels_utils.constants.titiler import (
 from pixels_utils.mask import build_numexpr_scl_mask
 
 
-def _check_assets_expression(assets: Iterable[str] = None, expression: str = None):
+def _check_assets_expression(
+    assets: Iterable[str] = None, expression: str = None
+) -> Tuple[Iterable[str], str]:
     if assets is None and expression is None:  # Neither are set
         raise ValueError("Either <assets> or <expression> must be passed.")
     if assets is not None and expression is not None:  # Both are set
@@ -27,6 +29,7 @@ def _check_assets_expression(assets: Iterable[str] = None, expression: str = Non
 
 
 def _check_asset_main(assets: Iterable[str] = None) -> str:
+    """Determines the "main" asset from an iterable."""
     if assets is not None:
         asset_main = assets if isinstance(assets, str) else assets[0]
     else:
@@ -41,7 +44,12 @@ def get_assets_expression_query(
     mask_scl: Iterable[SCL] = None,
     whitelist: bool = True,
     nodata: Union[int, float] = None,
-):
+) -> Tuple[Dict, str]:
+    """Creates the full query to be passed to GET or POST.
+
+    Returns:
+        Tuple[Dict, str]: _description_
+    """
     assets, expression = _check_assets_expression(assets, expression)
     asset_main = _check_asset_main(assets)
 

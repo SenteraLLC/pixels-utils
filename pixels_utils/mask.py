@@ -1,6 +1,6 @@
 from typing import Iterable, Union
 
-from pixels_utils.constants.sentinel2 import SCL, SCL_GROUP_ARABLE
+from pixels_utils.constants.sentinel2 import SCL
 
 
 def _build_mask_by_assignment(scl_assignment, else_value):
@@ -30,7 +30,7 @@ def _build_mask_by_assignment(scl_assignment, else_value):
 def build_numexpr_scl_mask(
     assets: Iterable[str] = None,
     expression: str = None,
-    mask_scl: Iterable[SCL] = SCL_GROUP_ARABLE,
+    mask_scl: Iterable[SCL] = None,
     whitelist: bool = True,
     nodata: Union[int, float] = 0,
 ) -> str:
@@ -51,10 +51,10 @@ def build_numexpr_scl_mask(
     Returns:
         str: _description_
     """
-    nodata = 0.0 if nodata is None else nodata
+    nodata = 0 if nodata is None else nodata
     if assets is not None and mask_scl is not None:
         raise NotImplementedError(
-            "<assets> not yet implemented for clouds.build_numexpr_scl_mask()"
+            "<assets> not yet implemented for mask.build_numexpr_scl_mask()"
         )  # TODO
         if whitelist is True:
             pass

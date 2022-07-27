@@ -47,6 +47,17 @@ def test_get_assets_expression_query_none(sceneid_fixture):
     ).should.throw(ValueError, "Either <assets> or <expression> must be passed.")
 
 
+def test_get_assets_expression_query_both(sceneid_fixture):
+    scene_url = ELEMENT84_L2A_SCENE_URL.format(
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
+    )
+    get_assets_expression_query.when.called_with(
+        scene_url, assets=ASSETS_MSI, expression=EXPRESSION_NDVI
+    ).should.throw(
+        ValueError, "Both <assets> and <expression> are set, but only one is allowed."
+    )
+
+
 def test_get_assets_expression_query_assets(sceneid_fixture):
     scene_url = ELEMENT84_L2A_SCENE_URL.format(
         collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_fixture
