@@ -36,15 +36,15 @@ def sceneid_aoi1_fixture():
     return sceneid
 
 
-@pytest.fixture
-def scene_url_aoi1_fixture():
+@pytest.fixture(autouse=True, scope="class")
+def SCENE_URL_1():
     return ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid_aoi1_fixture
+        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid
     )
 
 
-@pytest.fixture
-def geojson_aoi1_fixture():
+@pytest.fixture(autouse=True, scope="class")
+def GEOJSON_1():
     return sample_aoi
 
 
