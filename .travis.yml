@@ -1,5 +1,5 @@
 language: python
-python: 3.8
+python: 3.9
 
 install:
   - 'pip install poetry'
@@ -7,4 +7,4 @@ install:
 
 script:
   - poetry run pre-commit run --all-files
-  - poetry run <pkg_name> --help
+  - poetry run pixels-utils --help
