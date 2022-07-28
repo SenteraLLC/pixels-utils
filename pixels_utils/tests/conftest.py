@@ -19,13 +19,13 @@ DATA_DIR = join(abspath(Path(__file__).resolve().parents[0]), "fixtures")
 # chdir(DATA_DIR)
 
 
-def get_fixture(file_name: str, directory: Optional[str] = DATA_DIR):
+def load_file(file_name: str, directory: Optional[str] = DATA_DIR):
     """Read json from the fixtures directory."""
     with open(join(directory, file_name)) as f:
         return load(f)
 
 
-def get_fixture_pickle(file_name: str, directory: Optional[str] = DATA_DIR):
+def load_pickle(file_name: str, directory: Optional[str] = DATA_DIR):
     """Read json from the fixtures directory."""
     with open(join(directory, file_name), "rb") as f:
         return pickle.load(f)
@@ -48,33 +48,21 @@ def GEOJSON_1():
     return sample_aoi
 
 
-def mock_get_stac_statistics_geo_None_scl_mask_None(
-    # scene_url=scene_url_aoi1_fixture,
-    assets=None,
-    expression=None,
-):
-    fname_pickle = f"geo_None_scl_mask_None.pickle"
-    dir_name = join(DATA_DIR, "statistics")
-    if assets is None and expression == EXPRESSION_NDVI:
-        return get_fixture_pickle(
-            fname_pickle,
-            join(dir_name, "ASSETS_None_EXPRESSION_NDVI"),
-        )
-    elif assets == ASSETS_MSI and expression is None:
-        return get_fixture_pickle(
-            fname_pickle,
-            join(dir_name, "ASSETS_MSI_EXPRESSION_None"),
-        )
+@pytest.fixture(autouse=True, scope="function")
+def mock_endpoints_stac_statistics():
+    def f(assets=None, expression=None, fname_pickle=f"geo_aoi1_scl_mask_None.pickle"):
+        dir_name = join(DATA_DIR, "statistics")
+        if assets is None and expression == EXPRESSION_NDVI:
+            return load_pickle(
+                fname_pickle,
+                join(dir_name, "ASSETS_None_EXPRESSION_NDVI"),
+            )
+        elif assets == ASSETS_MSI and expression is None:
+            return load_pickle(
+                fname_pickle,
+                join(dir_name, "ASSETS_MSI_EXPRESSION_None"),
+            )
+        else:
+            return None
 
-    # elif assets == ASSETS_MSI and expression == EXPRESSION_NDVI:
-    #     return get_fixture_pickle(
-    #         fname_pickle,
-    #         join(dir_name, "ASSETS_MSI_EXPRESSION_NDVI"),
-    #     )
-    else:
-        return None
-
-
-@pytest.fixture
-def mock_get_stac_statistics_geo_None_scl_mask_None_fixture():
-    return mock_get_stac_statistics_geo_None_scl_mask_None
+    return f
