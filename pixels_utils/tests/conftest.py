@@ -13,38 +13,40 @@ from pixels_utils.constants.sentinel2 import (
     EXPRESSION_NDVI,
     SENTINEL_2_L2A_COLLECTION,
 )
-from pixels_utils.tests.data import sample_aoi, sceneid
+from pixels_utils.tests.data.load_data import (
+    sample_aoi,
+    sample_scene_url,
+    sample_sceneid,
+)
 
-DATA_DIR = join(abspath(Path(__file__).resolve().parents[0]), "fixtures")
+DATA_DIR = join(abspath(Path(__file__).resolve().parents[0]), "data")
 # chdir(DATA_DIR)
 
 
 def load_file(file_name: str, directory: Optional[str] = DATA_DIR):
-    """Read json from the fixtures directory."""
+    """Read json from the data directory."""
     with open(join(directory, file_name)) as f:
         return load(f)
 
 
 def load_pickle(file_name: str, directory: Optional[str] = DATA_DIR):
-    """Read json from the fixtures directory."""
+    """Read json from the data directory."""
     with open(join(directory, file_name), "rb") as f:
         return pickle.load(f)
 
 
-@pytest.fixture
-def sceneid_aoi1_fixture():
-    return sceneid
+@pytest.fixture(autouse=True, scope="class")
+def SCENEID_FIXTURE():
+    return sample_sceneid
 
 
 @pytest.fixture(autouse=True, scope="class")
-def SCENE_URL_1():
-    return ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid
-    )
+def SCENE_URL_FIXTURE():
+    return sample_scene_url
 
 
 @pytest.fixture(autouse=True, scope="class")
-def GEOJSON_1():
+def GEOJSON_FIXTURE():
     return sample_aoi
 
 
