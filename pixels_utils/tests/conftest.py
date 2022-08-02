@@ -68,16 +68,3 @@ def mock_endpoints_stac_statistics():
         )
 
     return f
-
-    # if assets is None and expression == EXPRESSION_NDVI and gsd == None:
-    #     return load_pickle(
-    #         fname_pickle,
-    #         join(dir_name, "ASSETS_None_EXPRESSION_NDVI_GSD_None"),
-    #     )
-    # elif assets == ASSETS_MSI and expression is None and gsd == None:
-    #     return load_pickle(
-    #         fname_pickle,
-    #         join(dir_name, "ASSETS_MSI_EXPRESSION_None"),
-    #     )
-    # else:
-    #     return None
