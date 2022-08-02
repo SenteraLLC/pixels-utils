@@ -50,7 +50,7 @@ from pixels_utils.constants.sentinel2 import (
 )
 from pixels_utils.constants.titiler import ENDPOINT_STATISTICS
 from pixels_utils.mask import SCL
-from pixels_utils.tests.data import sceneid, sample_aoi
+from pixels_utils.tests.data import sceneid, sample_geojson
 from pixels_utils.utilities import _check_assets_expression
 
 scene_url = ELEMENT84_L2A_SCENE_URL.format(
@@ -59,7 +59,7 @@ scene_url = ELEMENT84_L2A_SCENE_URL.format(
 assets=None
 expression=EXPRESSION_NDVI
 mask_scl = [SCL.VEGETATION, SCL.BARE_SOIL]
-geojson = sample_aoi()["features"][0]
+geojson = sample_geojson()["features"][0]
 whitelist=True
 nodata=None
 
