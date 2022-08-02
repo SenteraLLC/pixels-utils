@@ -1,5 +1,6 @@
 PIXELS_URL = "https://pixels.sentera.com/stac/{endpoint}"
 
+ENDPOINT_CROP = "crop"
 ENDPOINT_INFO = "info"
 ENDPOINT_STATISTICS = "statistics"
 
