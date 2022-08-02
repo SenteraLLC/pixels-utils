@@ -3,6 +3,7 @@ name = "pixels-utils"
 version = "0.0.1"
 description = "A pythonic data science wrapper to [Sentera's public satellite imagery API](https://pixels.sentera.com). The main purpose is to provide more direct access to the Pixels API via common data science libraries (like Pandas and GeoPandas)."
 authors = []
+exclude = ["pixels_utils/tests/data/*"]
 
 [tool.poetry.dependencies]
 python = "~3.9.13"
@@ -16,6 +17,8 @@ ipywidgets = "^7.7.1"
 ipyfilechooser = "^0.6.0"
 validators = "^0.20.0"
 joblib = "^1.1.0"
+Shapely = "^1.8.2"
+geopy = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

@@ -20,6 +20,8 @@ def statistics(
     mask_scl: Iterable[SCL] = None,
     whitelist: bool = True,
     nodata: Union[int, float] = None,
+    gsd: Union[int, float] = 20,
+    resampling: str = "nearest",
 ) -> Response:
     """Return asset's statistics for a GeoJSON.
 
@@ -36,6 +38,8 @@ def statistics(
         mask_scl: _description_. Defaults to None.
         whitelist: _description_. Defaults to True.
         nodata: _description_. Defaults to None.
+        gsd: _description_. Defaults to 20.
+        resampling: _description_. Defaults to "nearest".
     """
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
@@ -47,9 +51,12 @@ def statistics(
         scene_url,
         assets=assets,
         expression=expression,
+        geojson=geojson,
         mask_scl=mask_scl,
         whitelist=whitelist,
         nodata=nodata,
+        gsd=gsd,
+        resampling=resampling,
     )
 
     if geojson is not None:

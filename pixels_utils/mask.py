@@ -32,7 +32,7 @@ def build_numexpr_scl_mask(
     expression: str = None,
     mask_scl: Iterable[SCL] = None,
     whitelist: bool = True,
-    nodata: Union[int, float] = 0,
+    nodata: Union[int, float] = 0.0,
 ) -> str:
     """Builds the NumExpr where clause based on assets/expression and SCL list.
 
@@ -51,7 +51,7 @@ def build_numexpr_scl_mask(
     Returns:
         str: _description_
     """
-    nodata = 0 if nodata is None else nodata
+    nodata = 0.0 if nodata is None else nodata
     if assets is not None and mask_scl is not None:
         raise NotImplementedError(
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()"
