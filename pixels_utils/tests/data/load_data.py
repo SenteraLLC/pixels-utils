@@ -27,7 +27,7 @@ def sample_scene_url(data_id=1):
     )
 
 
-def sample_aoi(data_id=1):
+def sample_geojson(data_id=1):
     name = f"aoi_{data_id}"
     with open(f"{name}.geojson") as f:
         geojson = load(f)

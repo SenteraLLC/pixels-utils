@@ -14,7 +14,7 @@ from pixels_utils.constants.sentinel2 import (
     SENTINEL_2_L2A_COLLECTION,
 )
 from pixels_utils.tests.data.load_data import (
-    sample_aoi,
+    sample_geojson,
     sample_scene_url,
     sample_sceneid,
 )
@@ -47,24 +47,37 @@ def SCENE_URL_FIXTURE():
 
 @pytest.fixture(autouse=True, scope="class")
 def GEOJSON_FIXTURE():
-    return sample_aoi
+    return sample_geojson
 
 
 @pytest.fixture(autouse=True, scope="function")
 def mock_endpoints_stac_statistics():
-    def f(assets=None, expression=None, fname_pickle=f"geo_aoi1_scl_mask_None.pickle"):
+    def f(
+        assets=None,
+        expression=None,
+        gsd=None,
+        fname_pickle=f"geo_aoi1_scl_mask_None.pickle",
+    ):
         dir_name = join(DATA_DIR, "statistics")
-        if assets is None and expression == EXPRESSION_NDVI:
-            return load_pickle(
-                fname_pickle,
-                join(dir_name, "ASSETS_None_EXPRESSION_NDVI"),
-            )
-        elif assets == ASSETS_MSI and expression is None:
-            return load_pickle(
-                fname_pickle,
-                join(dir_name, "ASSETS_MSI_EXPRESSION_None"),
-            )
-        else:
-            return None
+        assets_name = "MSI" if assets == ASSETS_MSI else "None"
+        expression_name = "NDVI" if expression == EXPRESSION_NDVI else "None"
+        folder = f"ASSETS_{assets_name}_EXPRESSION_{expression_name}_GSD_{gsd}"
+        return load_pickle(
+            fname_pickle,
+            join(dir_name, folder),
+        )
 
     return f
+
+    # if assets is None and expression == EXPRESSION_NDVI and gsd == None:
+    #     return load_pickle(
+    #         fname_pickle,
+    #         join(dir_name, "ASSETS_None_EXPRESSION_NDVI_GSD_None"),
+    #     )
+    # elif assets == ASSETS_MSI and expression is None and gsd == None:
+    #     return load_pickle(
+    #         fname_pickle,
+    #         join(dir_name, "ASSETS_MSI_EXPRESSION_None"),
+    #     )
+    # else:
+    #     return None
