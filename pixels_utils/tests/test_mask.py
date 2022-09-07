@@ -39,7 +39,7 @@ class Test_Mask_Build_Numexpr_ASSETS_None_EXPRESSION_None:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=True,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.return_value(None)
 
     def test_scl_mask_bl_nodata(self):
@@ -49,7 +49,7 @@ class Test_Mask_Build_Numexpr_ASSETS_None_EXPRESSION_None:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=False,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.return_value(None)
 
 
@@ -92,7 +92,7 @@ class Test_Mask_Build_Numexpr_ASSETS_MSI_EXPRESSION_None:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=True,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.throw(
             NotImplementedError,
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()",
@@ -105,7 +105,7 @@ class Test_Mask_Build_Numexpr_ASSETS_MSI_EXPRESSION_None:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=False,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.throw(
             NotImplementedError,
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()",
@@ -129,7 +129,7 @@ class Test_Mask_Build_Numexpr_ASSETS_NONE_EXPRESSION_NDVI:
             mask_scl=self.MASK_SCL,
             whitelist=True,
         ).should.return_value(
-            "where(SCL == 4, (B08-B04)/(B08+B04), where(SCL == 5, (B08-B04)/(B08+B04), 0));"
+            "where(SCL == 4, (B08-B04)/(B08+B04), where(SCL == 5, (B08-B04)/(B08+B04), 0.0));"
         )
 
     def test_scl_mask_bl(self):
@@ -139,7 +139,7 @@ class Test_Mask_Build_Numexpr_ASSETS_NONE_EXPRESSION_NDVI:
             mask_scl=self.MASK_SCL,
             whitelist=False,
         ).should.return_value(
-            "where(SCL == 4, 0, where(SCL == 5, 0, (B08-B04)/(B08+B04)));"
+            "where(SCL == 4, 0.0, where(SCL == 5, 0.0, (B08-B04)/(B08+B04)));"
         )
 
     def test_scl_mask_wl_nodata(self):
@@ -149,7 +149,7 @@ class Test_Mask_Build_Numexpr_ASSETS_NONE_EXPRESSION_NDVI:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=True,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.return_value(
             "where(SCL == 4, (B08-B04)/(B08+B04), where(SCL == 5, (B08-B04)/(B08+B04), {nodata}));".format(
                 nodata=NODATA
@@ -163,7 +163,7 @@ class Test_Mask_Build_Numexpr_ASSETS_NONE_EXPRESSION_NDVI:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=False,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.return_value(
             "where(SCL == 4, {nodata}, where(SCL == 5, {nodata}, (B08-B04)/(B08+B04)));".format(
                 nodata=NODATA
@@ -210,7 +210,7 @@ class Test_Mask_Build_Numexpr_ASSETS_MSI_EXPRESSION_NDVI:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=True,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.throw(
             NotImplementedError,
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()",
@@ -223,7 +223,7 @@ class Test_Mask_Build_Numexpr_ASSETS_MSI_EXPRESSION_NDVI:
             expression=self.EXPRESSION,
             mask_scl=self.MASK_SCL,
             whitelist=False,
-            nodata=NODATA,
+            mask_value=NODATA,
         ).should.throw(
             NotImplementedError,
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()",

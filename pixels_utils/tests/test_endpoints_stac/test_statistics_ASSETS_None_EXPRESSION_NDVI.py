@@ -3,7 +3,7 @@ import sure
 from requests import Response
 
 from pixels_utils.constants.sentinel2 import ASSETS_MSI, EXPRESSION_NDVI
-from pixels_utils.endpoints.stac import statistics
+from pixels_utils.endpoints.stac import statistics_response
 from pixels_utils.mask import SCL, build_numexpr_scl_mask
 from pixels_utils.tests.conftest import mock_endpoints_stac_statistics
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
@@ -32,7 +32,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_None_scl_mask_None.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -86,7 +86,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_aoi1_scl_mask_None.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -126,7 +126,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_None_scl_mask_wl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -145,7 +145,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -166,7 +166,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_aoi1_scl_mask_wl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -186,7 +186,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -211,7 +211,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_None_scl_mask_bl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -230,7 +230,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -251,7 +251,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_aoi1_scl_mask_bl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -271,7 +271,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -297,7 +297,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_None_scl_mask_wl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -316,7 +316,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -337,7 +337,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_aoi1_scl_mask_wl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -357,7 +357,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -382,7 +382,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_None_scl_mask_bl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -401,7 +401,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -422,7 +422,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             fname_pickle=f"geo_aoi1_scl_mask_bl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -442,7 +442,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -479,7 +479,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_None_scl_mask_None.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -513,7 +513,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_aoi1_scl_mask_None.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -553,7 +553,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_None_scl_mask_wl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -572,7 +572,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -593,7 +593,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_aoi1_scl_mask_wl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -613,7 +613,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -638,7 +638,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_None_scl_mask_bl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -657,7 +657,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -678,7 +678,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_aoi1_scl_mask_bl.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -698,7 +698,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -724,7 +724,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_None_scl_mask_wl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -743,7 +743,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -764,7 +764,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_aoi1_scl_mask_wl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -784,7 +784,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 
@@ -809,7 +809,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_None_scl_mask_bl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -828,7 +828,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats = data[key]
 
@@ -849,7 +849,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
             fname_pickle=f"geo_aoi1_scl_mask_bl_nodata.pickle",
         )
         with mock.patch(
-            "pixels_utils.endpoints.stac.statistics", return_value=r_mock
+            "pixels_utils.endpoints.stac.statistics_response", return_value=r_mock
         ) as statistics_patch:
             r = statistics_patch(
                 self.SCENE_URL,
@@ -869,7 +869,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
                 expression=self.EXPRESSION,
                 mask_scl=self.MASK_SCL,
                 whitelist=WHITELIST,
-                nodata=NODATA,
+                mask_value=NODATA,
             )[:-1]
             stats_ndvi = stats[key]
 

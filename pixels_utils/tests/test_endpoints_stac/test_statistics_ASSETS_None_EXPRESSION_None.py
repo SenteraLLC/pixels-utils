@@ -1,6 +1,6 @@
 import sure
 
-from pixels_utils.endpoints.stac import statistics
+from pixels_utils.endpoints.stac import statistics_response
 from pixels_utils.mask import SCL
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 
@@ -17,7 +17,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
     GEOJSON = sample_geojson(data_id=1)
 
     def test_geo_none_scl_mask_none(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -29,7 +29,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
         )
 
     def test_geo_aoi1_scl_mask_none(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -42,7 +42,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
         )
 
     def test_geo_none_scl_mask_wl(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -57,7 +57,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
         )
 
     def test_geo_aoi1_scl_mask_wl(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -72,7 +72,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
         )
 
     def test_geo_none_scl_mask_bl(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -87,7 +87,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
         )
 
     def test_geo_aoi1_scl_mask_bl(self):
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -103,7 +103,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
 
     def test_geo_none_scl_mask_wl_nodata(self):
         NODATA = -1
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -120,7 +120,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
 
     def test_geo_aoi1_scl_mask_wl_nodata(self):
         NODATA = -1
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -137,7 +137,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
 
     def test_geo_none_scl_mask_bl_nodata(self):
         NODATA = -1
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,
@@ -154,7 +154,7 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_None_GSD_20:
 
     def test_geo_aoi1_scl_mask_bl_nodata(self):
         NODATA = -1
-        statistics.when.called_with(
+        statistics_response.when.called_with(
             self.SCENE_URL,
             assets=self.ASSETS,
             expression=self.EXPRESSION,

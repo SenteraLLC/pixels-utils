@@ -32,7 +32,7 @@ def build_numexpr_scl_mask(
     expression: str = None,
     mask_scl: Iterable[SCL] = None,
     whitelist: bool = True,
-    nodata: Union[int, float] = 0.0,
+    mask_value: Union[int, float] = 0.0,
 ) -> str:
     """Builds the NumExpr where clause based on assets/expression and SCL list.
 
@@ -44,14 +44,13 @@ def build_numexpr_scl_mask(
         whitelist or blacklist. `whitelist` indicates that all pixels that match the
         SCL in `scl_and_outcome` will be kept, whereas `blacklist` indicates that all
         pixels that match the SCL in `scl_and_outcome` will be masked out.
-        nodata (str, optional): The nodata value; will be used to ignore all pixels
-        whose classification is not included in <scl_and_outcome>. Defaults to
-        `str(SCL.NO_DATA)`.
+        mask_value (str, optional): The mask value; will be used to represent all pixels
+        masked by <mask_scl>/<whitelist> combination. Defaults to 0.0.
 
     Returns:
         str: _description_
     """
-    nodata = 0.0 if nodata is None else nodata
+    mask_value = 0.0 if mask_value is None else mask_value
     if assets is not None and mask_scl is not None:
         raise NotImplementedError(
             "<assets> not yet implemented for mask.build_numexpr_scl_mask()"
@@ -67,10 +66,10 @@ def build_numexpr_scl_mask(
         if whitelist is True:
             scl_assignment = ((scl, expression) for scl in mask_scl)
             return "{0};".format(
-                _build_mask_by_assignment(scl_assignment, else_value=nodata)
+                _build_mask_by_assignment(scl_assignment, else_value=mask_value)
             )
         else:  # blacklist
-            scl_assignment = ((scl, nodata) for scl in mask_scl)
+            scl_assignment = ((scl, mask_value) for scl in mask_scl)
             return "{0};".format(
                 _build_mask_by_assignment(scl_assignment, else_value=expression)
             )
