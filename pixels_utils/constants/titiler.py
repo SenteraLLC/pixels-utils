@@ -3,9 +3,13 @@ PIXELS_URL = "https://pixels.sentera.com/stac/{endpoint}"
 ENDPOINT_CROP = "crop"
 ENDPOINT_INFO = "info"
 ENDPOINT_STATISTICS = "statistics"
+URL_PIXELS_CROP = (
+    "{pixels_endpoint}/{minx},{miny},{maxx},{maxy}/{width}x{height}{format}"
+)
+URL_PIXELS_CROP_GEOJSON = "{pixels_endpoint}/{width}x{height}{format}"
 
 NODATA_STR = "nodata_value"
-
+RESAMPLING_NEAREST = "nearest"
 
 QUERY_URL = "url"  # STAC Item URL. Required
 QUERY_ASSETS = "assets"  # asset names. Default to all available assets.
