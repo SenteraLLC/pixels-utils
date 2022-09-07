@@ -30,7 +30,7 @@ def _check_assets_expression(
         raise ValueError(
             "Both <assets> and <expression> are set, but only one is allowed."
         )
-    logging.info(f"assets: {assets}\nexpression: {expression}")
+    logging.info("assets: %s\nexpression: %s", assets, expression)
     return assets, expression
 
 
@@ -70,7 +70,7 @@ def get_assets_expression_query(
                 assets=assets,
                 mask_scl=mask_scl,
                 whitelist=whitelist,
-                nodata=nodata,
+                mask_value=nodata,
             ),
             QUERY_NODATA: nodata,
             QUERY_HEIGHT: height,
@@ -87,7 +87,7 @@ def get_assets_expression_query(
                 expression=expression,
                 mask_scl=mask_scl,
                 whitelist=whitelist,
-                nodata=nodata,
+                mask_value=nodata,
             ),
             QUERY_NODATA: nodata,
             QUERY_HEIGHT: height,

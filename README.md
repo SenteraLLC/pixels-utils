@@ -26,7 +26,7 @@ If using `pixels-utils` as a dependency in your script, simply add it to the `py
 
 ``` toml
 [tool.poetry.dependencies]
-pixels_utils = { git = "ssh://git@github.com/SenteraLLC/pixels-utils.git", branch = "main"}
+pixels_utils = { git = "ssh://git@github.com/SenteraLLC/pixels-utils.git", branch = "main", extras = ["rasterio"]}
 ```
 
 Install `pixels-utils` and all its dependencies via `poetry install`.
