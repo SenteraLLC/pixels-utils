@@ -1,4 +1,6 @@
-from typing import Any, Iterable, Tuple, Union
+import logging
+from datetime import date
+from typing import Any, Dict, Iterable, Tuple, Union
 from warnings import warn
 
 import numpy.ma as ma
@@ -9,11 +11,17 @@ from numpy import expand_dims as np_expand_dims
 from numpy import logical_not as np_logical_not
 from numpy import min_scalar_type as np_min_scalar_type
 from numpy import ndarray as np_ndarray
+from pandas import DataFrame
+from pandas import concat as pd_concat
 from requests import get, post
 from shapely.geometry import shape
 
 from pixels_utils.constants.decorators import requires_rasterio
-from pixels_utils.constants.sentinel2 import SCL
+from pixels_utils.constants.sentinel2 import (
+    ELEMENT84_L2A_SCENE_URL,
+    SCL,
+    SENTINEL_2_L2A_COLLECTION,
+)
 from pixels_utils.constants.titiler import (
     ENDPOINT_CROP,
     ENDPOINT_STATISTICS,
@@ -23,6 +31,7 @@ from pixels_utils.constants.titiler import (
 )
 from pixels_utils.constants.types import STAC_crop, STAC_statistics
 from pixels_utils.rasterio import ensure_data_profile_consistency
+from pixels_utils.scenes import bbox_from_geojson, get_stac_scenes
 from pixels_utils.utilities import (
     find_geometry_from_geojson,
     get_assets_expression_query,
@@ -101,6 +110,66 @@ def statistics_response(
         )
     else:
         return get(PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS), params=query)
+
+
+@requires_rasterio
+def statistics(
+    date_start: Union[date, str],
+    date_end: Union[date, str],
+    geojson: Any = None,
+    assets: Iterable[str] = None,
+    expression: str = None,
+    mask_scl: Iterable[SCL] = None,
+    whitelist: bool = True,
+    nodata: Union[int, float] = None,
+    gsd: Union[int, float] = 20,
+    resampling: str = "nearest",
+    collection: str = SENTINEL_2_L2A_COLLECTION,
+) -> DataFrame:
+
+    df_scenes = get_stac_scenes(bbox_from_geojson(geojson), date_start, date_end)
+    logging.info("Getting statistics for %s scenes", len(df_scenes))
+    df_stats = None
+    for _, scene in df_scenes.iterrows():
+        # if i == 2:
+        #     break
+        scene_url = ELEMENT84_L2A_SCENE_URL.format(
+            collection=collection, sceneid=scene["id"]
+        )
+        r = statistics_response(
+            scene_url,
+            assets=assets,
+            expression=expression,
+            geojson=geojson,
+            mask_scl=mask_scl,
+            whitelist=whitelist,
+            nodata=nodata,
+            gsd=gsd,
+            resampling=resampling,
+        )
+        stats_dict, meta_dict = _parse_stats_response(
+            r,
+            acquisition_time=scene["datetime"],
+            cloud_cover_scene_pct=scene["eo:cloud_cover"],
+            scene_url=scene_url,
+            assets=assets,
+            expression=expression,
+            geojson=geojson,
+            mask_scl=mask_scl,
+            whitelist=whitelist,
+            nodata=nodata,
+            gsd=gsd,
+            resampling=resampling,
+        )
+        if "histogram" in stats_dict:
+            del stats_dict["histogram"]
+        df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
+        df_stats = (
+            df_stats_temp.copy()
+            if df_stats is None
+            else pd_concat([df_stats, df_stats_temp], axis=0)
+        )
+    return df_stats
 
 
 @memory.cache
@@ -186,6 +255,28 @@ def crop_response(
             params=query,
         )
     return STAC_crop(r)
+
+
+def _combine_stats_and_meta_dicts(stats_dict: Dict, meta_dict: Dict) -> DataFrame:
+    master_dict = {}
+    master_dict["scene_url"] = meta_dict.pop("scene_url")
+    master_dict["acquisition_time"] = meta_dict.pop("acquisition_time")
+    master_dict["cloud_cover_scene_pct"] = meta_dict.pop("cloud_cover_scene_pct")
+    master_dict.update(stats_dict)
+    master_dict["metadata"] = meta_dict
+    # df_stats = DataFrame.from_records(
+    #     data=[master_dict],
+    #     # index=pd.Index(data=[scene_url], name="scene_url")
+    # )
+    return DataFrame.from_records(data=[master_dict])
+
+
+def _parse_stats_response(r: STAC_statistics, **kwargs) -> tuple[Dict, Dict]:
+    data_dict = r.json()
+    stats_key = list(data_dict["properties"]["statistics"].keys())[0]
+    stats_dict = data_dict["properties"]["statistics"][stats_key].copy()
+    meta_dict = {k: v for k, v in kwargs.items()}
+    return stats_dict, meta_dict
 
 
 @requires_rasterio
