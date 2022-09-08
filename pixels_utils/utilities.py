@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Iterable, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 from geopy.distance import distance
 from requests import get
@@ -11,8 +11,11 @@ from pixels_utils.constants.titiler import (
     NODATA_STR,
     PIXELS_URL,
     QUERY_ASSETS,
+    QUERY_C,
+    QUERY_CATEGORICAL,
     QUERY_EXPRESSION,
     QUERY_HEIGHT,
+    QUERY_HISTOGRAM_BINS,
     QUERY_NODATA,
     QUERY_RESAMPLING,
     QUERY_URL,
@@ -24,6 +27,7 @@ from pixels_utils.mask import build_numexpr_scl_mask
 def _check_assets_expression(
     assets: Iterable[str] = None, expression: str = None
 ) -> Tuple[Iterable[str], str]:
+    assets = [assets] if isinstance(assets, str) else assets
     if assets is None and expression is None:  # Neither are set
         raise ValueError("Either <assets> or <expression> must be passed.")
     if assets is not None and expression is not None:  # Both are set
@@ -53,6 +57,9 @@ def get_assets_expression_query(
     nodata: Union[int, float] = None,
     gsd: Union[int, float] = None,
     resampling: str = "nearest",
+    categorical: bool = False,
+    c: List[Union[float, int]] = None,
+    histogram_bins: str = None,
 ) -> Tuple[Dict, str]:
     """Creates the full query to be passed to GET or POST.
 
@@ -76,9 +83,22 @@ def get_assets_expression_query(
             QUERY_HEIGHT: height,
             QUERY_WIDTH: width,
             QUERY_RESAMPLING: resampling,
+            QUERY_CATEGORICAL: str(categorical).lower(),
+            QUERY_C: c,
+            QUERY_HISTOGRAM_BINS: histogram_bins,
         }
     elif assets is not None and mask_scl is None:
-        query = {QUERY_URL: scene_url, QUERY_ASSETS: assets}
+        query = {
+            QUERY_URL: scene_url,
+            QUERY_ASSETS: assets,
+            QUERY_NODATA: nodata,
+            QUERY_HEIGHT: height,
+            QUERY_WIDTH: width,
+            QUERY_RESAMPLING: resampling,
+            QUERY_CATEGORICAL: str(categorical).lower(),
+            QUERY_C: c,
+            QUERY_HISTOGRAM_BINS: histogram_bins,
+        }
 
     if expression is not None and mask_scl is not None:
         query = {
@@ -93,6 +113,9 @@ def get_assets_expression_query(
             QUERY_HEIGHT: height,
             QUERY_WIDTH: width,
             QUERY_RESAMPLING: resampling,
+            QUERY_CATEGORICAL: str(categorical).lower(),
+            QUERY_C: c,
+            QUERY_HISTOGRAM_BINS: histogram_bins,
         }
         # query = {
         #     QUERY_URL: scene_url,
@@ -112,6 +135,9 @@ def get_assets_expression_query(
             QUERY_HEIGHT: height,
             QUERY_WIDTH: width,
             QUERY_RESAMPLING: resampling,
+            QUERY_CATEGORICAL: str(categorical).lower(),
+            QUERY_C: c,
+            QUERY_HISTOGRAM_BINS: histogram_bins,
         }
     query_drop_null = {k: v for k, v in query.items() if v is not None}
     return query_drop_null, asset_main

@@ -52,13 +52,18 @@ def build_numexpr_scl_mask(
     """
     mask_value = 0.0 if mask_value is None else mask_value
     if assets is not None and mask_scl is not None:
-        raise NotImplementedError(
-            "<assets> not yet implemented for mask.build_numexpr_scl_mask()"
-        )  # TODO
+        assets = [assets] if isinstance(assets, str) else assets
         if whitelist is True:
-            pass
-        else:
-            pass
+            scl_assignment = ((scl, "{asset}") for scl in mask_scl)
+            numexpr_str_template = "{0};".format(
+                _build_mask_by_assignment(scl_assignment, else_value=mask_value)
+            )
+        else:  # blacklist
+            scl_assignment = ((scl, mask_value) for scl in mask_scl)
+            numexpr_str_template = "{0};".format(
+                _build_mask_by_assignment(scl_assignment, else_value="{asset}")
+            )
+        return [numexpr_str_template.format(asset=asset) for asset in assets]
     elif assets is not None and mask_scl is None:
         return assets
 
@@ -68,7 +73,7 @@ def build_numexpr_scl_mask(
             return "{0};".format(
                 _build_mask_by_assignment(scl_assignment, else_value=mask_value)
             )
-        else:  # blacklist
+        else:
             scl_assignment = ((scl, mask_value) for scl in mask_scl)
             return "{0};".format(
                 _build_mask_by_assignment(scl_assignment, else_value=expression)

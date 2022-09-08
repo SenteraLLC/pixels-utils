@@ -1,16 +1,16 @@
 import logging
 from datetime import date
-from typing import Any, Dict, Iterable, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union
 from warnings import warn
 
 import numpy.ma as ma
-import numpy.typing as npt
 from geo_utils.general import round_dec_degrees
 from joblib import Memory  # type: ignore
 from numpy import expand_dims as np_expand_dims
 from numpy import logical_not as np_logical_not
 from numpy import min_scalar_type as np_min_scalar_type
 from numpy import ndarray as np_ndarray
+from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pandas import concat as pd_concat
 from requests import get, post
@@ -65,6 +65,9 @@ def statistics_response(
     nodata: Union[int, float] = None,
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
+    categorical: bool = False,
+    c: List[Union[float, int]] = None,
+    histogram_bins: str = None,
 ) -> STAC_statistics:
     """Return asset's statistics for a GeoJSON.
 
@@ -100,6 +103,9 @@ def statistics_response(
         nodata=nodata,
         gsd=gsd,
         resampling=resampling,
+        categorical=categorical,
+        c=c,
+        histogram_bins=histogram_bins,
     )
 
     if geojson is not None:
@@ -110,6 +116,49 @@ def statistics_response(
         )
     else:
         return get(PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS), params=query)
+
+
+def scl_stats(
+    scene_url: str,
+    geojson: Any,
+    whitelist: bool = True,
+    nodata: Union[int, float] = None,
+    gsd: Union[int, float] = 20,
+    resampling: str = "nearest",
+    **kwargs,
+) -> tuple[Dict, Dict]:
+    r_scl = statistics_response(
+        scene_url,
+        assets="SCL",
+        expression=None,
+        geojson=geojson,
+        mask_scl=None,
+        whitelist=whitelist,
+        nodata=nodata,
+        gsd=gsd,
+        resampling=resampling,
+        categorical=True,
+        c=list(range(12)),
+    )
+    # kwargs2 = {k:v for k,v in kwargs}
+    stats_dict_scl, meta_dict_scl = _parse_stats_response(
+        r_scl,
+        **kwargs,
+        # acquisition_time=scene["datetime"],
+        # cloud_cover_scene_pct=scene["eo:cloud_cover"],
+        scene_url=scene_url,
+        assets="SCL",
+        expression=None,
+        geojson=geojson,
+        mask_scl=None,
+        whitelist=whitelist,
+        nodata=nodata,
+        gsd=gsd,
+        resampling=resampling,
+        categorical=True,
+        c=list(range(12)),
+    )
+    return stats_dict_scl, meta_dict_scl
 
 
 @requires_rasterio
@@ -125,6 +174,9 @@ def statistics(
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
     collection: str = SENTINEL_2_L2A_COLLECTION,
+    categorical: bool = False,
+    c: List[Union[float, int]] = None,
+    histogram_bins: str = None,
 ) -> DataFrame:
 
     df_scenes = get_stac_scenes(bbox_from_geojson(geojson), date_start, date_end)
@@ -146,6 +198,9 @@ def statistics(
             nodata=nodata,
             gsd=gsd,
             resampling=resampling,
+            categorical=categorical,
+            c=c,
+            histogram_bins=histogram_bins,
         )
         stats_dict, meta_dict = _parse_stats_response(
             r,
@@ -163,6 +218,39 @@ def statistics(
         )
         if "histogram" in stats_dict:
             del stats_dict["histogram"]
+        stats_dict_scl, meta_dict_scl = scl_stats(
+            scene_url,
+            geojson,
+            whitelist,
+            nodata,
+            gsd,
+            resampling,
+            acquisition_time=scene["datetime"],
+            cloud_cover_scene_pct=scene["eo:cloud_cover"],
+        )
+        scl_classes = [int(x) for x in stats_dict_scl["histogram"][1]]
+        scl_counts = [int(x) for x in stats_dict_scl["histogram"][0]]
+        scl_pcts = [
+            (x / stats_dict_scl["count"]) * 100 for x in stats_dict_scl["histogram"][0]
+        ]
+        scl_hist_count = dict(zip(scl_classes, scl_counts))
+        scl_hist_pct = dict(zip(scl_classes, scl_pcts))
+
+        mask_scl_pixel_count = 0
+        if whitelist is True:
+            for scene_class in mask_scl:
+                mask_scl_pixel_count += scl_hist_count[scene_class]
+        elif whitelist is False:
+            logging.info("WARNING!")
+            pass  # TODO: Need to make this more robust
+        stats_dict["whitelist_masked_pixels"] = mask_scl_pixel_count
+        stats_dict["whitelist_masked_pct"] = (
+            mask_scl_pixel_count / stats_dict_scl["count"]
+        ) * 100
+
+        meta_dict["scl_hist_count"] = scl_hist_count
+        meta_dict["scl_hist_pct"] = scl_hist_pct
+
         df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
         df_stats = (
             df_stats_temp.copy()
@@ -234,7 +322,7 @@ def crop_response(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
                 width=width,
                 height=height,
-                format=format,
+                format=format_stac,
             ),
             params=query,
             json=geojson,
@@ -250,7 +338,7 @@ def crop_response(
                 maxy=round_dec_degrees(maxy, n_decimal_places=6),
                 width=width,
                 height=height,
-                format=format,
+                format=format_stac,
             ),
             params=query,
         )
@@ -318,7 +406,7 @@ def crop(r: STAC_crop) -> Tuple[np_ndarray, Profile]:
 
 
 def mask_stac_crop(
-    data: npt.ArrayLike, profile: Profile, nodata: Union[float, int] = 0
+    data: ArrayLike, profile: Profile, nodata: Union[float, int] = 0
 ) -> tuple[np_ndarray, Profile]:
     """Sets the last band of <data> as a mask layer, setting nodata.
 
@@ -366,7 +454,7 @@ def mask_stac_crop(
     return array_mask, profile
 
 
-def write_to_file(path: str, data: npt.ArrayLike, profile: Profile):
+def write_to_file(path: str, data: ArrayLike, profile: Profile):
     """
     path = "/mnt/c/Users/Tyler/Downloads/test2.tif"
     """
