@@ -69,7 +69,7 @@ def get_assets_expression_query(
     """
     assets, expression = _check_assets_expression(assets, expression)
     asset_main = _check_asset_main(assets)
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    # geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     height, width = to_pixel_dimensions(geojson, gsd)
 
     if assets is not None and mask_scl is not None:
