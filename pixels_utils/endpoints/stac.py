@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Tuple, Union
 from warnings import warn
 
 import numpy.ma as ma
-from geo_utils.general import round_dec_degrees
+from geo_utils.general import ensure_valid_geojson, round_dec_degrees
 from joblib import Memory  # type: ignore
 from numpy import expand_dims as np_expand_dims
 from numpy import logical_not as np_logical_not
@@ -87,6 +87,7 @@ def statistics_response(
         gsd: _description_. Defaults to 20.
         resampling: _description_. Defaults to "nearest".
     """
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None
@@ -127,6 +128,7 @@ def scl_stats(
     resampling: str = "nearest",
     **kwargs,
 ) -> tuple[Dict, Dict]:
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     r_scl = statistics_response(
         scene_url,
         assets="SCL",
@@ -178,7 +180,7 @@ def statistics(
     c: List[Union[float, int]] = None,
     histogram_bins: str = None,
 ) -> DataFrame:
-
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     df_scenes = get_stac_scenes(bbox_from_geojson(geojson), date_start, date_end)
     logging.info("Getting statistics for %s scenes", len(df_scenes))
     df_stats = None
@@ -295,6 +297,7 @@ def crop_response(
         resampling: _description_. Defaults to "nearest".
         format_stac: _description_. Defaults to ".tif".
     """
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None

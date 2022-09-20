@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, Iterable, List, Tuple, Union
 
+from geo_utils.general import ensure_valid_geojson
 from geopy.distance import distance
 from requests import get
 from shapely.geometry import shape
@@ -68,6 +69,7 @@ def get_assets_expression_query(
     """
     assets, expression = _check_assets_expression(assets, expression)
     asset_main = _check_asset_main(assets)
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
     height, width = to_pixel_dimensions(geojson, gsd)
 
     if assets is not None and mask_scl is not None:
@@ -180,9 +182,10 @@ def to_pixel_dimensions(geojson: Any, gsd: Union[int, float]) -> Tuple[int, int]
         return None, None
     if gsd <= 0:
         raise ValueError(f"<gsd> of {gsd} is invalid (must be greater than 0.0).")
-    bounds = shape(
-        find_geometry_from_geojson(geojson)
-    ).bounds  # tuple of left, bottom, right, top coordinates
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    bounds = shape(geojson).bounds  # tuple of left, bottom, right, top coordinates
+    # find_geometry_from_geojson(geojson)
+    # ).bounds  # tuple of left, bottom, right, top coordinates
 
     p1 = (bounds[1], bounds[0])
     p2 = (bounds[3], bounds[0])
@@ -194,28 +197,28 @@ def to_pixel_dimensions(geojson: Any, gsd: Union[int, float]) -> Tuple[int, int]
     return height, width
 
 
-def find_geometry_from_geojson(geojson: Any) -> Dict:
-    """One might think a geojson is a geojson, but it isn't always as simple as that.
-    This function returns the "lowest-level" geojson from any geometry object, feature.
+# def find_geometry_from_geojson(geojson: Any) -> Dict:
+#     """One might think a geojson is a geojson, but it isn't always as simple as that.
+#     This function returns the "lowest-level" geojson from any geometry object, feature.
 
-    Raises ValueError if there are more than one geometry.
+#     Raises ValueError if there are more than one geometry.
 
-    Args:
-        geojson: _description_
+#     Args:
+#         geojson: _description_
 
-    Returns:
-        Dict: geometry expressed as a dictionary.
-    """
-    if "geometry" in geojson.keys():
-        geometry = geojson["geometry"]
-    elif "features" in geojson.keys():
-        feat_n = len(geojson["features"])
-        if feat_n > 1:
-            raise ValueError(
-                "<geojson> contains {feat_n} geometries. Please pass a GeoJSON that "
-                "contains one (and only one) geometry."
-            )
-        geometry = geojson["features"][0]["geometry"]
-    else:
-        raise ValueError("Could not determine a geometry from <geojson>.")
-    return geometry
+#     Returns:
+#         Dict: geometry expressed as a dictionary.
+#     """
+#     if "geometry" in geojson.keys():
+#         geometry = geojson["geometry"]
+#     elif "features" in geojson.keys():
+#         feat_n = len(geojson["features"])
+#         if feat_n > 1:
+#             raise ValueError(
+#                 "<geojson> contains {feat_n} geometries. Please pass a GeoJSON that "
+#                 "contains one (and only one) geometry."
+#             )
+#         geometry = geojson["features"][0]["geometry"]
+#     else:
+#         raise ValueError("Could not determine a geometry from <geojson>.")
+#     return geometry
