@@ -32,8 +32,7 @@ from pixels_utils.constants.titiler import (
 from pixels_utils.constants.types import STAC_crop, STAC_statistics
 from pixels_utils.rasterio import ensure_data_profile_consistency
 from pixels_utils.scenes import bbox_from_geojson, get_stac_scenes
-from pixels_utils.utilities import (
-    find_geometry_from_geojson,
+from pixels_utils.utilities import (  # find_geometry_from_geojson,
     get_assets_expression_query,
     get_nodata,
     to_pixel_dimensions,
@@ -331,7 +330,7 @@ def crop_response(
             json=geojson,
         )
     else:
-        minx, miny, maxx, maxy = shape(find_geometry_from_geojson(geojson)).bounds
+        minx, miny, maxx, maxy = shape(geojson).bounds
         r = get(
             URL_PIXELS_CROP.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
