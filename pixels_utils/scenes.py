@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Dict, Iterator, Tuple, Union
 
+from geo_utils.general import ensure_valid_geojson
 from pandas import DataFrame
 from satsearch import Search  # type: ignore
 
@@ -14,7 +15,9 @@ BoundingBox = Tuple[float, float, float, float]
 
 
 def bbox_from_geojson(geojson: Dict) -> BoundingBox:
-    coords = geojson["geometry"]["coordinates"]
+    # TODO: Check geojson keys: "geometry", "coordinates", etc.
+    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    coords = geojson["coordinates"]
     lngs = [lng for lng in _walk_geom_coords(coords, lambda c: c[0])]
     lats = [lat for lat in _walk_geom_coords(coords, lambda c: c[1])]
     return (min(lngs), min(lats), max(lngs), max(lats))
