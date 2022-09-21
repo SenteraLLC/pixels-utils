@@ -889,16 +889,14 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_10:
 # from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 
 # DATA_ID = 1
-# GEOJSON = sample_geojson(DATA_ID)["features"][0]
+# GEOJSON = sample_geojson(DATA_ID)
 # MASK_SCL = [SCL.VEGETATION, SCL.BARE_SOIL]
 # ASSETS = None
 # EXPRESSION = EXPRESSION_NDVI
 # GSD = 10
 # RESAMPLING = "nearest"
 
-# GEOJSON = sample_geojson(DATA_ID)["features"][
-#     0
-# ]  # sample_geojson(DATA_ID)["features"][0]
+# GEOJSON = sample_geojson(DATA_ID)
 # MASK_SCL = None  # [SCL.VEGETATION, SCL.BARE_SOIL]
 # WHITELIST = None
 # NODATA = None
