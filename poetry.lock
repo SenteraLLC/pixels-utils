@@ -528,7 +528,7 @@ rasterio = ["rasterio (>=1.3.2,<2.0.0)"]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/py-geo-utils.git"
 reference = "DEM-136-pixels-initial-release"
-resolved_reference = "0d8cc5672b5e7a0a670ab0ab3a708393a5475382"
+resolved_reference = "008393faf970edfbe4ee41aa54c3f3149c055c74"
 
 [[package]]
 name = "geographiclib"
