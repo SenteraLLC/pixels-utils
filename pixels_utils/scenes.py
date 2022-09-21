@@ -1,11 +1,10 @@
 from datetime import date
 from typing import Dict, Iterator, Tuple, Union
 
-from geo_utils.general import ensure_valid_geojson
+from geo_utils.validate_geojson import ensure_valid_geometry
 from pandas import DataFrame
 from satsearch import Search  # type: ignore
 
-# from .ui import y_choices, required_fields
 from pixels_utils.constants.sentinel2 import (
     ELEMENT84_SEARCH_URL,
     SENTINEL_2_L2A_COLLECTION,
@@ -14,10 +13,9 @@ from pixels_utils.constants.sentinel2 import (
 BoundingBox = Tuple[float, float, float, float]
 
 
-def bbox_from_geojson(geojson: Dict) -> BoundingBox:
-    # TODO: Check geojson keys: "geometry", "coordinates", etc.
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
-    coords = geojson["coordinates"]
+def bbox_from_geometry(geometry: Dict) -> BoundingBox:
+    geometry = ensure_valid_geometry(geometry, keys=["coordinates", "type"])
+    coords = geometry["coordinates"]
     lngs = [lng for lng in _walk_geom_coords(coords, lambda c: c[0])]
     lats = [lat for lat in _walk_geom_coords(coords, lambda c: c[1])]
     return (min(lngs), min(lats), max(lngs), max(lats))

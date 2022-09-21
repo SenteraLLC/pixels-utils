@@ -4,7 +4,11 @@ from typing import Any, Dict, Iterable, List, Tuple, Union
 from warnings import warn
 
 import numpy.ma as ma
-from geo_utils.general import ensure_valid_geojson, round_dec_degrees
+from geo_utils.general import round_dec_degrees
+from geo_utils.validate_geojson import (
+    ensure_valid_featurecollection,
+    get_all_geojson_geometries,
+)
 from joblib import Memory  # type: ignore
 from numpy import expand_dims as np_expand_dims
 from numpy import logical_not as np_logical_not
@@ -31,7 +35,7 @@ from pixels_utils.constants.titiler import (
 )
 from pixels_utils.constants.types import STAC_crop, STAC_statistics
 from pixels_utils.rasterio import ensure_data_profile_consistency
-from pixels_utils.scenes import bbox_from_geojson, get_stac_scenes
+from pixels_utils.scenes import bbox_from_geometry, get_stac_scenes
 from pixels_utils.utilities import (  # find_geometry_from_geojson,
     get_assets_expression_query,
     get_nodata,
@@ -86,7 +90,7 @@ def statistics_response(
         gsd: _description_. Defaults to 20.
         resampling: _description_. Defaults to "nearest".
     """
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    geojson_fc = ensure_valid_featurecollection(geojson)
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None
@@ -97,7 +101,7 @@ def statistics_response(
         scene_url,
         assets=assets,
         expression=expression,
-        geojson=geojson,
+        geojson=geojson_fc,
         mask_scl=mask_scl,
         whitelist=whitelist,
         nodata=nodata,
@@ -108,11 +112,11 @@ def statistics_response(
         histogram_bins=histogram_bins,
     )
 
-    if geojson is not None:
+    if geojson_fc is not None:
         return post(
             PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS),
             params=query,
-            json=geojson,
+            json=geojson_fc,
         )
     else:
         return get(PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS), params=query)
@@ -127,12 +131,12 @@ def scl_stats(
     resampling: str = "nearest",
     **kwargs,
 ) -> tuple[Dict, Dict]:
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    geojson_fc = ensure_valid_featurecollection(geojson)
     r_scl = statistics_response(
         scene_url,
         assets="SCL",
         expression=None,
-        geojson=geojson,
+        geojson=geojson_fc,
         mask_scl=None,
         whitelist=whitelist,
         nodata=nodata,
@@ -150,7 +154,7 @@ def scl_stats(
         scene_url=scene_url,
         assets="SCL",
         expression=None,
-        geojson=geojson,
+        geojson=geojson_fc,
         mask_scl=None,
         whitelist=whitelist,
         nodata=nodata,
@@ -179,8 +183,13 @@ def statistics(
     c: List[Union[float, int]] = None,
     histogram_bins: str = None,
 ) -> DataFrame:
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
-    df_scenes = get_stac_scenes(bbox_from_geojson(geojson), date_start, date_end)
+    geojson_fc = ensure_valid_featurecollection(geojson)
+    df_scenes = get_stac_scenes(
+        bbox_from_geometry(next(get_all_geojson_geometries(geojson_fc))),
+        date_start,
+        date_end,
+    )
+    # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
     logging.info("Getting statistics for %s scenes", len(df_scenes))
     df_stats = None
     for _, scene in df_scenes.iterrows():
@@ -193,7 +202,7 @@ def statistics(
             scene_url,
             assets=assets,
             expression=expression,
-            geojson=geojson,
+            geojson=geojson_fc,
             mask_scl=mask_scl,
             whitelist=whitelist,
             nodata=nodata,
@@ -210,7 +219,7 @@ def statistics(
             scene_url=scene_url,
             assets=assets,
             expression=expression,
-            geojson=geojson,
+            geojson=geojson_fc,
             mask_scl=mask_scl,
             whitelist=whitelist,
             nodata=nodata,
@@ -221,7 +230,7 @@ def statistics(
             del stats_dict["histogram"]
         stats_dict_scl, meta_dict_scl = scl_stats(
             scene_url,
-            geojson,
+            geojson_fc,
             whitelist,
             nodata,
             gsd,
@@ -296,7 +305,7 @@ def crop_response(
         resampling: _description_. Defaults to "nearest".
         format_stac: _description_. Defaults to ".tif".
     """
-    geojson = ensure_valid_geojson(geojson, keys=["coordinates", "type"])
+    geojson_fc = ensure_valid_featurecollection(geojson)
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None
@@ -306,7 +315,7 @@ def crop_response(
         scene_url,
         assets=assets,
         expression=expression,
-        geojson=geojson,
+        geojson=geojson_fc,
         mask_scl=mask_scl,
         whitelist=whitelist,
         nodata=nodata,
@@ -315,10 +324,10 @@ def crop_response(
     )
     query = {k: v for k, v in query.items() if k not in ["height", "width"]}
 
-    height, width = to_pixel_dimensions(geojson, gsd)
+    height, width = to_pixel_dimensions(geojson_fc, gsd)
     # minx, miny, maxx, maxy = shape(find_geometry_from_geojson(geojson)).bounds
 
-    if geojson is not None:
+    if geojson_fc is not None:
         r = post(
             URL_PIXELS_CROP_GEOJSON.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
@@ -327,10 +336,10 @@ def crop_response(
                 format=format_stac,
             ),
             params=query,
-            json=geojson,
+            json=geojson_fc,
         )
     else:
-        minx, miny, maxx, maxy = shape(geojson).bounds
+        minx, miny, maxx, maxy = shape(geojson_fc).bounds
         r = get(
             URL_PIXELS_CROP.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
@@ -363,8 +372,8 @@ def _combine_stats_and_meta_dicts(stats_dict: Dict, meta_dict: Dict) -> DataFram
 
 def _parse_stats_response(r: STAC_statistics, **kwargs) -> tuple[Dict, Dict]:
     data_dict = r.json()
-    stats_key = list(data_dict["properties"]["statistics"].keys())[0]
-    stats_dict = data_dict["properties"]["statistics"][stats_key].copy()
+    stats_key = list(data_dict["features"][0]["properties"]["statistics"].keys())[0]
+    stats_dict = data_dict["features"][0]["properties"]["statistics"][stats_key].copy()
     meta_dict = {k: v for k, v in kwargs.items()}
     return stats_dict, meta_dict
 
