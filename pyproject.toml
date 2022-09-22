@@ -19,6 +19,7 @@ validators = "^0.20.0"
 joblib = "^1.1.0"
 geopy = "^2.2.0"
 geo_utils = { git = "ssh://git@github.com/SenteraLLC/py-geo-utils.git", branch = "DEM-136-pixels-initial-release", extras = ["geopandas", "rasterio"] }
+retry = "^0.9.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

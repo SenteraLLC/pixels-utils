@@ -1,9 +1,10 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Dict, Iterable, List, Tuple, Union
 from warnings import warn
 
 import numpy.ma as ma
+import pytz
 from geo_utils.general import round_dec_degrees
 from geo_utils.validate_geojson import (
     ensure_valid_featurecollection,
@@ -18,6 +19,7 @@ from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pandas import concat as pd_concat
 from requests import get, post
+from retry import retry
 from shapely.geometry import shape
 
 from pixels_utils.constants.decorators import requires_rasterio
@@ -71,6 +73,7 @@ def statistics_response(
     categorical: bool = False,
     c: List[Union[float, int]] = None,
     histogram_bins: str = None,
+    clear_cache=False,
 ) -> STAC_statistics:
     """Return asset's statistics for a GeoJSON.
 
@@ -111,15 +114,24 @@ def statistics_response(
         c=c,
         histogram_bins=histogram_bins,
     )
+    if clear_cache is True:
+        headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
+    else:
+        headers = {}
 
     if geojson_fc is not None:
         return post(
             PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS),
             params=query,
             json=geojson_fc,
+            headers=headers,
         )
     else:
-        return get(PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS), params=query)
+        return get(
+            PIXELS_URL.format(endpoint=ENDPOINT_STATISTICS),
+            params=query,
+            headers=headers,
+        )
 
 
 def scl_stats(
@@ -198,34 +210,48 @@ def statistics(
         scene_url = ELEMENT84_L2A_SCENE_URL.format(
             collection=collection, sceneid=scene["id"]
         )
-        r = statistics_response(
-            scene_url,
-            assets=assets,
-            expression=expression,
-            geojson=geojson_fc,
-            mask_scl=mask_scl,
-            whitelist=whitelist,
-            nodata=nodata,
-            gsd=gsd,
-            resampling=resampling,
-            categorical=categorical,
-            c=c,
-            histogram_bins=histogram_bins,
-        )
-        stats_dict, meta_dict = _parse_stats_response(
-            r,
-            acquisition_time=scene["datetime"],
-            cloud_cover_scene_pct=scene["eo:cloud_cover"],
-            scene_url=scene_url,
-            assets=assets,
-            expression=expression,
-            geojson=geojson_fc,
-            mask_scl=mask_scl,
-            whitelist=whitelist,
-            nodata=nodata,
-            gsd=gsd,
-            resampling=resampling,
-        )
+
+        @retry(KeyError, tries=3, delay=2)
+        def run_stats(clear_cache_iter=iter([False, True, True])):
+            request_time = (
+                datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z")
+            )
+            r = statistics_response(
+                scene_url,
+                assets=assets,
+                expression=expression,
+                geojson=geojson_fc,
+                mask_scl=mask_scl,
+                whitelist=whitelist,
+                nodata=nodata,
+                gsd=gsd,
+                resampling=resampling,
+                categorical=categorical,
+                c=c,
+                histogram_bins=histogram_bins,
+                clear_cache=next(
+                    clear_cache_iter
+                ),  # Clears cache after 1st try in case error is raised
+            )
+            stats_dict, meta_dict = _parse_stats_response(
+                r,
+                request_time=request_time,
+                acquisition_time=scene["datetime"],
+                cloud_cover_scene_pct=scene["eo:cloud_cover"],
+                scene_url=scene_url,
+                assets=assets,
+                expression=expression,
+                geojson=geojson_fc,
+                mask_scl=mask_scl,
+                whitelist=whitelist,
+                nodata=nodata,
+                gsd=gsd,
+                resampling=resampling,
+            )
+            return stats_dict, meta_dict
+
+        stats_dict, meta_dict = run_stats()
+
         if "histogram" in stats_dict:
             del stats_dict["histogram"]
         stats_dict_scl, meta_dict_scl = scl_stats(

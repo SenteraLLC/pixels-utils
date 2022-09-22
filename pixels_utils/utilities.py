@@ -67,6 +67,7 @@ def get_assets_expression_query(
     Returns:
         Tuple[Dict, str]: _description_
     """
+    logging.info("Building query for: %s", scene_url)
     assets, expression = _check_assets_expression(assets, expression)
     asset_main = _check_asset_main(assets)
     # geojson = ensure_valid_geometry(geojson, keys=["coordinates", "type"])
