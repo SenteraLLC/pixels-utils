@@ -35,7 +35,7 @@ def _check_assets_expression(
         raise ValueError(
             "Both <assets> and <expression> are set, but only one is allowed."
         )
-    logging.info("assets: %s\nexpression: %s", assets, expression)
+    logging.info("assets: %s / expression: %s", assets, expression)
     return assets, expression
 
 

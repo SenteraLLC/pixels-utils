@@ -204,9 +204,10 @@ def statistics(
     # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
     logging.info("Getting statistics for %s scenes", len(df_scenes))
     df_stats = None
-    for _, scene in df_scenes.iterrows():
+    for i, scene in df_scenes.iterrows():
         # if i == 2:
         #     break
+        logging.info("Retrieving scene %s/%s", i, len(df_scenes))
         scene_url = ELEMENT84_L2A_SCENE_URL.format(
             collection=collection, sceneid=scene["id"]
         )
