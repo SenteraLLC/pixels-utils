@@ -90,7 +90,7 @@ def statistics_response(
         gsd: _description_. Defaults to 20.
         resampling: _description_. Defaults to "nearest".
     """
-    geojson_fc = ensure_valid_featurecollection(geojson)
+    geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None
@@ -131,7 +131,7 @@ def scl_stats(
     resampling: str = "nearest",
     **kwargs,
 ) -> tuple[Dict, Dict]:
-    geojson_fc = ensure_valid_featurecollection(geojson)
+    geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
     r_scl = statistics_response(
         scene_url,
         assets="SCL",
@@ -183,7 +183,7 @@ def statistics(
     c: List[Union[float, int]] = None,
     histogram_bins: str = None,
 ) -> DataFrame:
-    geojson_fc = ensure_valid_featurecollection(geojson)
+    geojson_fc = ensure_valid_featurecollection(geojson, create_new=True)
     df_scenes = get_stac_scenes(
         bbox_from_geometry(next(get_all_geojson_geometries(geojson_fc))),
         date_start,
@@ -305,7 +305,7 @@ def crop_response(
         resampling: _description_. Defaults to "nearest".
         format_stac: _description_. Defaults to ".tif".
     """
-    geojson_fc = ensure_valid_featurecollection(geojson)
+    geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
     nodata = (
         get_nodata(scene_url, assets=assets, expression=expression)
         if nodata is None
