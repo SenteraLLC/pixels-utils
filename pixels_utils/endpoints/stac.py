@@ -274,7 +274,7 @@ def statistics(
     for i, scene in df_scenes.iterrows():
         # if i == 2:
         #     break
-        logging.info("Retrieving scene %s/%s", i, len(df_scenes))
+        logging.info("Retrieving scene %s/%s", i + 1, len(df_scenes))
         stats_kwargs["scene_url"] = ELEMENT84_L2A_SCENE_URL.format(
             collection=collection, sceneid=scene["id"]
         )
