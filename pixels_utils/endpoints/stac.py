@@ -134,6 +134,7 @@ def statistics_response(
         )
 
 
+@retry(KeyError, tries=3, delay=2)
 def scl_stats(
     scene_url: str,
     geojson: Any,
@@ -141,44 +142,95 @@ def scl_stats(
     nodata: Union[int, float] = None,
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
-    **kwargs,
+    acquisition_time: str = None,
+    cloud_cover_scene_pct: float = None,
+    clear_cache_iter=iter([False, True, True]),
 ) -> tuple[Dict, Dict]:
     geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
-    r_scl = statistics_response(
-        scene_url,
-        assets="SCL",
-        expression=None,
-        geojson=geojson_fc,
-        mask_scl=None,
-        whitelist=whitelist,
-        nodata=nodata,
-        gsd=gsd,
-        resampling=resampling,
-        categorical=True,
-        c=list(range(12)),
-    )
-    # kwargs2 = {k:v for k,v in kwargs}
+    stats_kwargs = {
+        "scene_url": scene_url,
+        "assets": "SCL",
+        "expression": None,
+        "geojson": geojson_fc,
+        "mask_scl": None,
+        "whitelist": whitelist,
+        "nodata": nodata,
+        "gsd": gsd,
+        "resampling": resampling,
+        "categorical": True,
+        "c": list(range(12)),
+        "histogram_bins": None,
+    }
+
+    scene_dict = {
+        "request_time_scl": (
+            datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z")
+        ),
+        "acquisition_time": acquisition_time,
+        "cloud_cover_scene_pct": cloud_cover_scene_pct,
+    }
+    r_scl = statistics_response(**stats_kwargs, clear_cache=next(clear_cache_iter))
+
+    # r_scl = statistics_response(
+    #     scene_url,
+    #     assets="SCL",
+    #     expression=None,
+    #     geojson=geojson_fc,
+    #     mask_scl=None,
+    #     whitelist=whitelist,
+    #     nodata=nodata,
+    #     gsd=gsd,
+    #     resampling=resampling,
+    #     categorical=True,
+    #     c=list(range(12)),
+    #     clear_cache=next(clear_cache_iter),
+    # )
+
     stats_dict_scl, meta_dict_scl = _parse_stats_response(
-        r_scl,
-        **kwargs,
-        # acquisition_time=scene["datetime"],
-        # cloud_cover_scene_pct=scene["eo:cloud_cover"],
-        scene_url=scene_url,
-        assets="SCL",
-        expression=None,
-        geojson=geojson_fc,
-        mask_scl=None,
-        whitelist=whitelist,
-        nodata=nodata,
-        gsd=gsd,
-        resampling=resampling,
-        categorical=True,
-        c=list(range(12)),
+        r_scl, **scene_dict, **stats_kwargs
     )
     return stats_dict_scl, meta_dict_scl
 
+    # stats_dict_scl, meta_dict_scl = _parse_stats_response(
+    #     r_scl,
+    #     **kwargs,
+    #     # acquisition_time=scene["datetime"],
+    #     # cloud_cover_scene_pct=scene["eo:cloud_cover"],
+    #     scene_url=scene_url,
+    #     assets="SCL",
+    #     expression=None,
+    #     geojson=geojson_fc,
+    #     mask_scl=None,
+    #     whitelist=whitelist,
+    #     nodata=nodata,
+    #     gsd=gsd,
+    #     resampling=resampling,
+    #     categorical=True,
+    #     c=list(range(12)),
+    # )
+    # return stats_dict_scl, meta_dict_scl
 
-@requires_rasterio
+
+def _compute_whitelist_stats(stats_dict_scl, whitelist, mask_scl):
+    scl_classes = [int(x) for x in stats_dict_scl["histogram"][1]]
+    scl_counts = [int(x) for x in stats_dict_scl["histogram"][0]]
+    scl_pcts = [
+        (x / stats_dict_scl["count"]) * 100 for x in stats_dict_scl["histogram"][0]
+    ]
+    scl_hist_count = dict(zip(scl_classes, scl_counts))
+    scl_hist_pct = dict(zip(scl_classes, scl_pcts))
+    if whitelist is True:
+        whitelist_pixels = sum(
+            [scl_hist_count[scene_class] for scene_class in mask_scl]
+        )
+    else:
+        whitelist_pixels = stats_dict_scl["count"] - sum(
+            [scl_hist_count[scene_class] for scene_class in mask_scl]
+        )
+    whitelist_pct = (whitelist_pixels / stats_dict_scl["count"]) * 100
+    return whitelist_pixels, whitelist_pct, scl_hist_count, scl_hist_pct
+
+
 def statistics(
     date_start: Union[date, str],
     date_end: Union[date, str],
@@ -201,6 +253,21 @@ def statistics(
         date_start,
         date_end,
     )
+    stats_kwargs = {
+        "scene_url": None,
+        "assets": assets,
+        "expression": expression,
+        "geojson": geojson_fc,
+        "mask_scl": mask_scl,
+        "whitelist": whitelist,
+        "nodata": nodata,
+        "gsd": gsd,
+        "resampling": resampling,
+        "categorical": categorical,
+        "c": c,
+        "histogram_bins": histogram_bins,
+    }
+
     # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
     logging.info("Getting statistics for %s scenes", len(df_scenes))
     df_stats = None
@@ -208,85 +275,92 @@ def statistics(
         # if i == 2:
         #     break
         logging.info("Retrieving scene %s/%s", i, len(df_scenes))
-        scene_url = ELEMENT84_L2A_SCENE_URL.format(
+        stats_kwargs["scene_url"] = ELEMENT84_L2A_SCENE_URL.format(
             collection=collection, sceneid=scene["id"]
         )
+        acquisition_time = scene["datetime"]
+        cloud_cover_scene_pct = scene["eo:cloud_cover"]
 
         @retry(KeyError, tries=3, delay=2)
-        def run_stats(clear_cache_iter=iter([False, True, True])):
-            request_time = (
-                datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z")
-            )
+        def run_stats(
+            acquisition_time: str = None,
+            cloud_cover_scene_pct: float = None,
+            clear_cache_iter=iter([False, True, True]),
+        ):
+            """
+            Runs statististics_response() and _parse_stats_response() together so if
+            KeyError it can retry.
+            """
+            scene_dict = {
+                "request_time": (
+                    datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z")
+                ),
+                "acquisition_time": acquisition_time,
+                "cloud_cover_scene_pct": cloud_cover_scene_pct,
+            }
             r = statistics_response(
-                scene_url,
-                assets=assets,
-                expression=expression,
-                geojson=geojson_fc,
-                mask_scl=mask_scl,
-                whitelist=whitelist,
-                nodata=nodata,
-                gsd=gsd,
-                resampling=resampling,
-                categorical=categorical,
-                c=c,
-                histogram_bins=histogram_bins,
+                **stats_kwargs,
                 clear_cache=next(
                     clear_cache_iter
                 ),  # Clears cache after 1st try in case error is raised
             )
-            stats_dict, meta_dict = _parse_stats_response(
-                r,
-                request_time=request_time,
-                acquisition_time=scene["datetime"],
-                cloud_cover_scene_pct=scene["eo:cloud_cover"],
-                scene_url=scene_url,
-                assets=assets,
-                expression=expression,
-                geojson=geojson_fc,
-                mask_scl=mask_scl,
-                whitelist=whitelist,
-                nodata=nodata,
-                gsd=gsd,
-                resampling=resampling,
+
+            (
+                stats_dict,
+                meta_dict,
+            ) = _parse_stats_response(  # Must be in same function as statistics_response() call
+                r, **scene_dict, **stats_kwargs
             )
             return stats_dict, meta_dict
 
-        stats_dict, meta_dict = run_stats()
-
-        if "histogram" in stats_dict:
-            del stats_dict["histogram"]
-        stats_dict_scl, meta_dict_scl = scl_stats(
-            scene_url,
-            geojson_fc,
-            whitelist,
-            nodata,
-            gsd,
-            resampling,
-            acquisition_time=scene["datetime"],
-            cloud_cover_scene_pct=scene["eo:cloud_cover"],
-        )
-        scl_classes = [int(x) for x in stats_dict_scl["histogram"][1]]
-        scl_counts = [int(x) for x in stats_dict_scl["histogram"][0]]
-        scl_pcts = [
-            (x / stats_dict_scl["count"]) * 100 for x in stats_dict_scl["histogram"][0]
-        ]
-        scl_hist_count = dict(zip(scl_classes, scl_counts))
-        scl_hist_pct = dict(zip(scl_classes, scl_pcts))
-
-        mask_scl_pixel_count = 0
-        if whitelist is True:
-            for scene_class in mask_scl:
-                mask_scl_pixel_count += scl_hist_count[scene_class]
-        elif whitelist is False:
-            logging.info("WARNING!")
-            pass  # TODO: Need to make this more robust
-        stats_dict["whitelist_masked_pixels"] = mask_scl_pixel_count
-        stats_dict["whitelist_masked_pct"] = (
-            mask_scl_pixel_count / stats_dict_scl["count"]
-        ) * 100
-
-        meta_dict["scl_hist_count"] = scl_hist_count
-        meta_dict["scl_hist_pct"] = scl_hist_pct
+        try:
+            stats_dict, meta_dict = run_stats(
+                acquisition_time,
+                cloud_cover_scene_pct,
+                clear_cache_iter=iter([False, True, True]),
+            )
+            stats_dict_scl, meta_dict_scl = scl_stats(
+                stats_kwargs["scene_url"],
+                geojson_fc,
+                whitelist,
+                nodata,
+                gsd,
+                resampling,
+                acquisition_time=acquisition_time,
+                cloud_cover_scene_pct=cloud_cover_scene_pct,
+                clear_cache_iter=iter([False, True, True]),
+            )
+            (
+                whitelist_pixels,
+                whitelist_pct,
+                scl_hist_count,
+                scl_hist_pct,
+            ) = _compute_whitelist_stats(stats_dict_scl, whitelist, mask_scl)
+            stats_dict["whitelist_pixels"] = whitelist_pixels
+            stats_dict["whitelist_pct"] = whitelist_pct
+            meta_dict["scl_hist_count"] = scl_hist_count
+            meta_dict["scl_hist_pct"] = scl_hist_pct
+            meta_dict["request_time_scl"] = meta_dict_scl["request_time_scl"]
+            if "histogram" in stats_dict:
+                del stats_dict["histogram"]
+        except TypeError:  # Fill in what we can so program can continue for other scenes in date range.
+            scene_dict = {
+                "request_time": None,
+                "acquisition_time": acquisition_time,
+                "cloud_cover_scene_pct": cloud_cover_scene_pct,
+            }
+            stats_dict, meta_dict = _parse_stats_response_blank(
+                **scene_dict, **stats_kwargs
+            )
+        except KeyError:
+            scene_dict = {
+                "request_time": None,
+                "acquisition_time": acquisition_time,
+                "cloud_cover_scene_pct": cloud_cover_scene_pct,
+            }
+            stats_dict, meta_dict = _parse_stats_response_blank(
+                **scene_dict, **stats_kwargs
+            )
 
         df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
         df_stats = (
@@ -401,6 +475,30 @@ def _parse_stats_response(r: STAC_statistics, **kwargs) -> tuple[Dict, Dict]:
     data_dict = r.json()
     stats_key = list(data_dict["features"][0]["properties"]["statistics"].keys())[0]
     stats_dict = data_dict["features"][0]["properties"]["statistics"][stats_key].copy()
+    meta_dict = {k: v for k, v in kwargs.items()}
+    return stats_dict, meta_dict
+
+
+def _parse_stats_response_blank(**kwargs) -> tuple[Dict, Dict]:
+    stats_keys = [
+        "min",
+        "max",
+        "mean",
+        "count",
+        "sum",
+        "std",
+        "median",
+        "majority",
+        "minority",
+        "unique",
+        "histogram",
+        "valid_percent",
+        "masked_pixels",
+        "valid_pixels",
+        "percentile_2",
+        "percentile_98",
+    ]
+    stats_dict = {k: None for k in stats_keys}
     meta_dict = {k: v for k, v in kwargs.items()}
     return stats_dict, meta_dict
 
