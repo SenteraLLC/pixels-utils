@@ -350,7 +350,11 @@ def statistics(
                 "cloud_cover_scene_pct": cloud_cover_scene_pct,
             }
             stats_dict, meta_dict = _parse_stats_response_blank(
-                **scene_dict, **stats_kwargs
+                **scene_dict,
+                **stats_kwargs,
+                scl_hist_count=None,
+                scl_hist_pct=None,
+                request_time_scl=None,
             )
         except KeyError:
             scene_dict = {
@@ -359,7 +363,11 @@ def statistics(
                 "cloud_cover_scene_pct": cloud_cover_scene_pct,
             }
             stats_dict, meta_dict = _parse_stats_response_blank(
-                **scene_dict, **stats_kwargs
+                **scene_dict,
+                **stats_kwargs,
+                scl_hist_count=None,
+                scl_hist_pct=None,
+                request_time_scl=None,
             )
 
         df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
