@@ -1,5 +1,6 @@
 import logging
 from datetime import date, datetime
+from json import dumps as json_dumps
 from typing import Any, Dict, Iterable, List, Tuple, Union
 from warnings import warn
 
@@ -258,6 +259,7 @@ def statistics(
         "assets": assets,
         "expression": expression,
         "geojson": geojson_fc,
+        # "geojson": geojson_fc.wkt,
         "mask_scl": mask_scl,
         "whitelist": whitelist,
         "nodata": nodata,
@@ -471,7 +473,7 @@ def _combine_stats_and_meta_dicts(stats_dict: Dict, meta_dict: Dict) -> DataFram
     master_dict["acquisition_time"] = meta_dict.pop("acquisition_time")
     master_dict["cloud_cover_scene_pct"] = meta_dict.pop("cloud_cover_scene_pct")
     master_dict.update(stats_dict)
-    master_dict["metadata"] = meta_dict
+    master_dict["metadata"] = json_dumps(meta_dict)
     # df_stats = DataFrame.from_records(
     #     data=[master_dict],
     #     # index=pd.Index(data=[scene_url], name="scene_url")
