@@ -501,12 +501,14 @@ def _parse_stats_response_blank(**kwargs) -> tuple[Dict, Dict]:
         "majority",
         "minority",
         "unique",
-        "histogram",
+        # "histogram",
         "valid_percent",
         "masked_pixels",
         "valid_pixels",
-        "percentile_2",
         "percentile_98",
+        "percentile_2",
+        "whitelist_pixels",
+        "whitelist_pct",
     ]
     stats_dict = {k: None for k in stats_keys}
     meta_dict = {k: v for k, v in kwargs.items()}
