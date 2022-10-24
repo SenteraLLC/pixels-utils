@@ -26,14 +26,35 @@ def get_stac_scenes(
     date_start: Union[date, str],
     date_end: Union[date, str],
     max_scene_cloud_cover_percent: int = 80,
-):
+) -> DataFrame:
+    """
+    Retrieves `scene_id`, `datetime`, and cloud cover for all available image tiles
+    between `date_start` and `date_end`.
+
+    Args:
+        bounding_box (BoundingBox): Geospatial bounding box of search area; must be
+        EPSG=4326.
+        date_start (Union[date, str]): Earliest UTC date to seach for available images
+        (inclusive).
+        date_end (Union[date, str]): Latest UTC date to seach for available images
+        (inclusive).
+        max_scene_cloud_cover_percent (int, optional): Maximum percent cloud cover
+        allowed in the scene. Scene cloud cover greater than this value will be dropped
+        from the returned DataFrame. Defaults to 80.
+
+    Returns:
+        DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each
+        scene withing `bounding_box` and betweent the passed date parameters.
+    """
     dates = str(date_start) + "/" + str(date_end)
     s = Search(
         url=ELEMENT84_SEARCH_URL,
         collections=[SENTINEL_2_L2A_COLLECTION],
         datetime=dates,
         bbox=bounding_box,
-        query={"eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}},
+        query={
+            "eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}
+        },  # TODO: Use kwargs to set query.
     )
     results_str = s.items().summary(
         params=[
