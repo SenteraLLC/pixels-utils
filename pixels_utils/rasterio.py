@@ -144,7 +144,7 @@ def save_image(
         Path(dirname(fname_out)).mkdir(parents=True, exist_ok=True)
     except FileExistsError:  # get this every once in a while for .tif
         pass
-    logging.debug(f'Saving "{split(fname_out)[-1]}"')
+    logging.debug('Saving "%s"', split(fname_out)[-1])
 
     profile = set_driver_tags(profile, driver, interleave)
     array, profile = ensure_data_profile_consistency(array, profile, driver)

@@ -258,9 +258,9 @@ def statistics(
     )
     # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
     if len(df_scenes) > 0:
-        logging.info(f"Getting STAC statistics. Number of scenes: {len(df_scenes)}")
+        logging.info("Getting STAC statistics. Number of scenes: %s", len(df_scenes))
     else:
-        logging.warning(f"No valid scenes for AOI from {date_start} to {date_end}.")
+        logging.warning("No valid scenes for AOI from %s to %s.", date_start, date_end)
         return
 
     stats_kwargs = {
@@ -352,7 +352,7 @@ def statistics(
             meta_dict["request_time_scl"] = meta_dict_scl["request_time_scl"]
             if "histogram" in stats_dict:
                 del stats_dict["histogram"]
-            logging.info(f"Retrieving scene {i+1}/{len(df_scenes)}: SUCCESS")
+            logging.info("Retrieving scene %s/%s: SUCCESS", i + 1, len(df_scenes))
         except TypeError:  # Fill in what we can so program can continue for other scenes in date range.
             scene_dict = {
                 "request_time": None,
@@ -366,7 +366,7 @@ def statistics(
                 scl_hist_pct=None,
                 request_time_scl=None,
             )
-            logging.warning(f"Retrieving scene {i+1}/{len(df_scenes)}: TypeError")
+            logging.warning("Retrieving scene  %s/%s: TypeError", i + 1, len(df_scenes))
         except KeyError:
             scene_dict = {
                 "request_time": None,
@@ -380,9 +380,9 @@ def statistics(
                 scl_hist_pct=None,
                 request_time_scl=None,
             )
-            logging.warning(f"Retrieving scene {i+1}/{len(df_scenes)}: KeyError")
+            logging.warning("Retrieving scene %s/%s: KeyError", i + 1, len(df_scenes))
 
-        logging.debug("Scene URL: {0}".format(stats_kwargs["scene_url"]))
+        logging.debug("Scene URL: %s", stats_kwargs["scene_url"])
         df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
         df_stats = (
             df_stats_temp.copy()

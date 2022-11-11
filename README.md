@@ -36,7 +36,7 @@ poetry install
 ```
 
 ### Logging style
-This library uses the `"{"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, be sure to set `style="{"` (or similar). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).
+This library uses the `"%s"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, style should be set as `style="%s"` (this is the default). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).
 
 For example:
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     logging_init(
         level=logging.INFO,
         format_string="{name} - {levelname}: {message}",
-        style="{"
+        style="%"
     )
 ```
 
