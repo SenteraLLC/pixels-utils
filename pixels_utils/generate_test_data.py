@@ -89,7 +89,7 @@ class GenerateTestData:
             folder, name = self._get_names(
                 assets, expression, geojson, mask_scl, whitelist, nodata, gsd
             )
-            logging.info(f"Generating sample data for {folder}/{name}")
+            logging.debug(f"Generating sample data for {folder}/{name}")
             try:
                 r = statistics(
                     scene_url,
@@ -104,6 +104,6 @@ class GenerateTestData:
                 )
                 self._save_pickle(r, folder, name)
             except ValueError:
-                logging.info("Unable to generate sample data (invalid arguments).")
+                logging.warning("Unable to generate sample data (invalid arguments).")
             except NotImplementedError:
-                logging.info("Unable to generate sample data (NotImplementedError).")
+                logging.warning("Unable to generate sample data (NotImplementedError).")

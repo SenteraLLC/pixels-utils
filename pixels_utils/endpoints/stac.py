@@ -249,11 +249,20 @@ def statistics(
     histogram_bins: str = None,
 ) -> DataFrame:
     geojson_fc = ensure_valid_featurecollection(geojson, create_new=True)
+    # in this case, <next> returns only the first geometry.
+    # TODO: Should there be a warning or exception raised if there happen to be multiple geometries passed?
     df_scenes = get_stac_scenes(
         bbox_from_geometry(next(get_all_geojson_geometries(geojson_fc))),
         date_start,
         date_end,
     )
+    # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
+    if len(df_scenes) > 0:
+        logging.info(f"Getting STAC statistics. Number of scenes: {len(df_scenes)}")
+    else:
+        logging.warning(f"No valid scenes for AOI from {date_start} to {date_end}.")
+        return
+
     stats_kwargs = {
         "scene_url": None,
         "assets": assets,
@@ -269,14 +278,10 @@ def statistics(
         "c": c,
         "histogram_bins": histogram_bins,
     }
-
-    # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
-    logging.info("Getting statistics for %s scenes", len(df_scenes))
     df_stats = None
     for i, scene in df_scenes.iterrows():
         # if i == 2:
         #     break
-        logging.info("Retrieving scene %s/%s", i + 1, len(df_scenes))
         stats_kwargs["scene_url"] = ELEMENT84_L2A_SCENE_URL.format(
             collection=collection, sceneid=scene["id"]
         )
@@ -315,6 +320,8 @@ def statistics(
             )
             return stats_dict, meta_dict
 
+        # TODO: A separate nested function that only runs if r has an error
+
         try:
             stats_dict, meta_dict = run_stats(
                 acquisition_time,
@@ -345,6 +352,7 @@ def statistics(
             meta_dict["request_time_scl"] = meta_dict_scl["request_time_scl"]
             if "histogram" in stats_dict:
                 del stats_dict["histogram"]
+            logging.info(f"Retrieving scene {i+1}/{len(df_scenes)}: SUCCESS")
         except TypeError:  # Fill in what we can so program can continue for other scenes in date range.
             scene_dict = {
                 "request_time": None,
@@ -358,6 +366,7 @@ def statistics(
                 scl_hist_pct=None,
                 request_time_scl=None,
             )
+            logging.warning(f"Retrieving scene {i+1}/{len(df_scenes)}: TypeError")
         except KeyError:
             scene_dict = {
                 "request_time": None,
@@ -371,7 +380,9 @@ def statistics(
                 scl_hist_pct=None,
                 request_time_scl=None,
             )
+            logging.warning(f"Retrieving scene {i+1}/{len(df_scenes)}: KeyError")
 
+        logging.debug("Scene URL: {0}".format(stats_kwargs["scene_url"]))
         df_stats_temp = _combine_stats_and_meta_dicts(stats_dict, meta_dict)
         df_stats = (
             df_stats_temp.copy()

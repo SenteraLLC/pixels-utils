@@ -35,7 +35,7 @@ def _check_assets_expression(
         raise ValueError(
             "Both <assets> and <expression> are set, but only one is allowed."
         )
-    logging.info("assets: %s / expression: %s", assets, expression)
+    logging.debug("assets: %s / expression: %s", assets, expression)
     return assets, expression
 
 
@@ -67,7 +67,7 @@ def get_assets_expression_query(
     Returns:
         Tuple[Dict, str]: _description_
     """
-    logging.info("Building query for: %s", scene_url)
+    logging.debug("Building query for: %s", scene_url)
     assets, expression = _check_assets_expression(assets, expression)
     asset_main = _check_asset_main(assets)
     # geojson = ensure_valid_geometry(geojson, keys=["coordinates", "type"])
