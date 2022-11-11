@@ -35,6 +35,23 @@ Install `pixels-utils` and all its dependencies via `poetry install`.
 poetry install
 ```
 
+### Logging
+This library uses the `"{"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, be sure to set `style="{"` (or similar). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).
+
+For example:
+
+``` python
+import logging
+from utils.logging.tqdm import logging_init
+
+if __name__ == "__main__":
+    logging_init(
+        level=logging.INFO,
+        format_string="{name} - {levelname}: {message}",
+        style="{"
+    )
+```
+
 ## Usage Example
 
 ### Example 1 - Find all the scenes available for a geometry within a date range
