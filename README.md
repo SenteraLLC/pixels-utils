@@ -35,7 +35,7 @@ Install `pixels-utils` and all its dependencies via `poetry install`.
 poetry install
 ```
 
-### Logging
+### Logging style
 This library uses the `"{"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, be sure to set `style="{"` (or similar). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).
 
 For example:
