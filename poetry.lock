@@ -2092,8 +2092,8 @@ visvalingamwyatt = "0.1.2"
 [package.source]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/py-utils.git"
-reference = "feature/formatter-set-options"
-resolved_reference = "f437f5269c18b66ddc1be483899cf9e9605e2da2"
+reference = "master"
+resolved_reference = "e45f51e5efe71a2f7516bf77a06045a981a1bf26"
 
 [[package]]
 name = "validators"
@@ -2241,7 +2241,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "bf62cbebf8bd676c421e7ef1000d634f155d6f849db2211e12daa3eef8da8185"
+content-hash = "81a5974e1860e46f5cb3b78a9d0646f00282b6d590d13da99da9d45b44de2c97"
 
 [metadata.files]
 affine = [
