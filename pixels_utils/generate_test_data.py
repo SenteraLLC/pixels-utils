@@ -9,7 +9,7 @@ from pixels_utils.constants.sentinel2 import (
     EXPRESSION_NDVI,
     SCL_GROUP_ARABLE,
 )
-from pixels_utils.endpoints.stac import statistics
+from pixels_utils.stac_endpoint import statistics
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 
 
