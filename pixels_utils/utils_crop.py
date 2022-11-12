@@ -15,7 +15,7 @@ try:
     from rasterio.io import DatasetReader, MemoryFile
     from rasterio.profiles import Profile
 
-    from pixels_utils.rasterio import ensure_data_profile_consistency, save_image
+    from pixels_utils.rasterio_helper import ensure_data_profile_consistency, save_image
 except ImportError:
     logging.exception(
         "Optional dependency <rasterio> not imported. Some features are not available."
