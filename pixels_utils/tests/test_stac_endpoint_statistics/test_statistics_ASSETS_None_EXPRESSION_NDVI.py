@@ -4,7 +4,7 @@ from requests import Response
 
 from pixels_utils.constants.sentinel2 import ASSETS_MSI, EXPRESSION_NDVI
 from pixels_utils.mask import SCL, build_numexpr_scl_mask
-from pixels_utils.stac_endpoint import statistics_response
+from pixels_utils.stac.endpoint import statistics_response
 from pixels_utils.tests.conftest import mock_endpoints_stac_statistics
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 from pixels_utils.tests.data.utilities_testing import calculate_valid_pix_pct

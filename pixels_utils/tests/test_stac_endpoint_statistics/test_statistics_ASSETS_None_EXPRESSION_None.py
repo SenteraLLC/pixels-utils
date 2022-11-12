@@ -1,7 +1,7 @@
 import sure
 
 from pixels_utils.mask import SCL
-from pixels_utils.stac_endpoint import statistics_response
+from pixels_utils.stac.endpoint import statistics_response
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 
 _ = sure.version
