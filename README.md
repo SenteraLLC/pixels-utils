@@ -65,7 +65,7 @@ from pixels_utils.constants.titiler import ENDPOINT_STATISTICS
 from pixels_utils.mask import SCL
 
 
-from geo_utils.general import geojson_geometry_to_shapely
+from geo_utils.vector import geojson_geometry_to_shapely
 
 from pixels_utils.tests.data.load_data import sample_geojson
 from pixels_utils.scenes import get_stac_scenes

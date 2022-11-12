@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Iterable, List, Tuple, Union
 
-from geo_utils.validate_geojson import ensure_valid_geometry, get_all_geojson_geometries
+from geo_utils.validate import ensure_valid_geometry, get_all_geojson_geometries
 from geopy.distance import distance
 from requests import get
 from shapely.geometry import shape
@@ -25,16 +25,12 @@ from pixels_utils.constants.titiler import (
 from pixels_utils.mask import build_numexpr_scl_mask
 
 
-def _check_assets_expression(
-    assets: Iterable[str] = None, expression: str = None
-) -> Tuple[Iterable[str], str]:
+def _check_assets_expression(assets: Iterable[str] = None, expression: str = None) -> Tuple[Iterable[str], str]:
     assets = [assets] if isinstance(assets, str) else assets
     if assets is None and expression is None:  # Neither are set
         raise ValueError("Either <assets> or <expression> must be passed.")
     if assets is not None and expression is not None:  # Both are set
-        raise ValueError(
-            "Both <assets> and <expression> are set, but only one is allowed."
-        )
+        raise ValueError("Both <assets> and <expression> are set, but only one is allowed.")
     logging.debug("assets: %s", assets)
     logging.debug("expression: %s", expression)
     return assets, expression
@@ -162,9 +158,7 @@ def get_nodata(
         "(B08-B04)/(B08+B04)"). Ignored when <assets> is set to a non-null value.
         Default is None.
     """
-    query, asset_main = get_assets_expression_query(
-        scene_url, assets=assets, expression=expression
-    )
+    query, asset_main = get_assets_expression_query(scene_url, assets=assets, expression=expression)
     r = get(PIXELS_URL.format(endpoint=ENDPOINT_INFO), params=query)
     asset_main = list(r.json().keys())[0] if asset_main is None else asset_main
     return float(r.json()[asset_main][NODATA_STR])

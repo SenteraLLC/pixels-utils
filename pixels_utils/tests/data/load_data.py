@@ -3,15 +3,9 @@ from os import chdir
 from os.path import abspath
 from pathlib import Path
 
-from geo_utils.validate_geojson import (
-    ensure_valid_featurecollection,
-    ensure_valid_geometry,
-)
+from geo_utils.validate import ensure_valid_featurecollection, ensure_valid_geometry
 
-from pixels_utils.constants.sentinel2 import (
-    ELEMENT84_L2A_SCENE_URL,
-    SENTINEL_2_L2A_COLLECTION,
-)
+from pixels_utils.constants.sentinel2 import ELEMENT84_L2A_SCENE_URL, SENTINEL_2_L2A_COLLECTION
 
 chdir(abspath(Path(__file__).resolve().parents[0]))
 
@@ -27,9 +21,7 @@ def sample_sceneid(data_id=1):
 
 
 def sample_scene_url(data_id=1):
-    return ELEMENT84_L2A_SCENE_URL.format(
-        collection=SENTINEL_2_L2A_COLLECTION, sceneid=sample_sceneid(data_id=1)
-    )
+    return ELEMENT84_L2A_SCENE_URL.format(collection=SENTINEL_2_L2A_COLLECTION, sceneid=sample_sceneid(data_id=1))
 
 
 def sample_featurecollection(data_id=1):

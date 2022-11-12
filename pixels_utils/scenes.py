@@ -1,14 +1,11 @@
 from datetime import date
 from typing import Dict, Iterator, Tuple, Union
 
-from geo_utils.validate_geojson import ensure_valid_geometry
+from geo_utils.validate import ensure_valid_geometry
 from pandas import DataFrame
 from satsearch import Search  # type: ignore
 
-from pixels_utils.constants.sentinel2 import (
-    ELEMENT84_SEARCH_URL,
-    SENTINEL_2_L2A_COLLECTION,
-)
+from pixels_utils.constants.sentinel2 import ELEMENT84_SEARCH_URL, SENTINEL_2_L2A_COLLECTION
 
 BoundingBox = Tuple[float, float, float, float]
 
@@ -52,9 +49,7 @@ def get_stac_scenes(
         collections=[SENTINEL_2_L2A_COLLECTION],
         datetime=dates,
         bbox=bounding_box,
-        query={
-            "eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}
-        },  # TODO: Use kwargs to set query.
+        query={"eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}},  # TODO: Use kwargs to set query.
     )
     results_str = s.items().summary(
         params=[
