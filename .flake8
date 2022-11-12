@@ -1,4 +1,4 @@
 [flake8]
-max-line-length = 88
+max-line-length = 120
 max-complexity = 18
 ignore = E203, E266, E501, W503, RST304, G001,  G002,  G003,  G004

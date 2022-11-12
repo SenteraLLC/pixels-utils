@@ -543,7 +543,7 @@ rasterio = ["rasterio (>=1.3.2,<2.0.0)"]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/py-geo-utils.git"
 reference = "DEM-136-pixels-initial-release"
-resolved_reference = "6d79f63acfaf4b20e98ae86adc6cd3b7d8a4f9db"
+resolved_reference = "921276de1f7c810c0d953445825ef1e715817779"
 
 [[package]]
 name = "geographiclib"
@@ -1933,7 +1933,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "stack-data"
-version = "0.6.0"
+version = "0.6.1"
 description = "Extract data from python stack frames and tracebacks for informative displays"
 category = "main"
 optional = false
@@ -3612,8 +3612,8 @@ soupsieve = [
     {file = "soupsieve-2.3.2.post1.tar.gz", hash = "sha256:fc53893b3da2c33de295667a0e19f078c14bf86544af307354de5fcf12a3f30d"},
 ]
 stack-data = [
-    {file = "stack_data-0.6.0-py3-none-any.whl", hash = "sha256:b92d206ef355a367d14316b786ab41cb99eb453a21f2cb216a4204625ff7bc07"},
-    {file = "stack_data-0.6.0.tar.gz", hash = "sha256:8e515439f818efaa251036af72d89e4026e2b03993f3453c000b200fb4f2d6aa"},
+    {file = "stack_data-0.6.1-py3-none-any.whl", hash = "sha256:960cb054d6a1b2fdd9cbd529e365b3c163e8dabf1272e02cfe36b58403cff5c6"},
+    {file = "stack_data-0.6.1.tar.gz", hash = "sha256:6c9a10eb5f342415fe085db551d673955611afb821551f554d91772415464315"},
 ]
 sure = [
     {file = "sure-2.0.0.tar.gz", hash = "sha256:34ae88c846046742ef074036bf311dc90ab152b7bc09c342b281cebf676727a2"},
