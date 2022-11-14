@@ -543,7 +543,7 @@ rasterio = ["rasterio (>=1.3.2,<2.0.0)"]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/py-geo-utils.git"
 reference = "DEM-136-pixels-initial-release"
-resolved_reference = "921276de1f7c810c0d953445825ef1e715817779"
+resolved_reference = "d62a5e63a64391759d8eae8ca1c4f151a74783f2"
 
 [[package]]
 name = "geographiclib"
@@ -1389,7 +1389,7 @@ complete = ["blosc", "numpy (>=1.9.0)", "pandas (>=0.19.0)", "pyzmq"]
 
 [[package]]
 name = "pathspec"
-version = "0.10.1"
+version = "0.10.2"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
 optional = false
@@ -1436,7 +1436,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "platformdirs"
-version = "2.5.3"
+version = "2.5.4"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "main"
 optional = false
@@ -2111,7 +2111,7 @@ test = ["flake8 (>=2.4.0)", "isort (>=4.2.2)", "pytest (>=2.2.3)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.16.6"
+version = "20.16.7"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -3123,8 +3123,8 @@ partd = [
     {file = "partd-1.3.0.tar.gz", hash = "sha256:ce91abcdc6178d668bcaa431791a5a917d902341cb193f543fe445d494660485"},
 ]
 pathspec = [
-    {file = "pathspec-0.10.1-py3-none-any.whl", hash = "sha256:46846318467efc4556ccfd27816e004270a9eeeeb4d062ce5e6fc7a87c573f93"},
-    {file = "pathspec-0.10.1.tar.gz", hash = "sha256:7ace6161b621d31e7902eb6b5ae148d12cfd23f4a249b9ffb6b9fee12084323d"},
+    {file = "pathspec-0.10.2-py3-none-any.whl", hash = "sha256:88c2606f2c1e818b978540f73ecc908e13999c6c3a383daf3705652ae79807a5"},
+    {file = "pathspec-0.10.2.tar.gz", hash = "sha256:8f6bf73e5758fd365ef5d58ce09ac7c27d2833a8d7da51712eac6e27e35141b0"},
 ]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
@@ -3202,8 +3202,8 @@ pkgutil_resolve_name = [
     {file = "pkgutil_resolve_name-1.3.10.tar.gz", hash = "sha256:357d6c9e6a755653cfd78893817c0853af365dd51ec97f3d358a819373bbd174"},
 ]
 platformdirs = [
-    {file = "platformdirs-2.5.3-py3-none-any.whl", hash = "sha256:0cb405749187a194f444c25c82ef7225232f11564721eabffc6ec70df83b11cb"},
-    {file = "platformdirs-2.5.3.tar.gz", hash = "sha256:6e52c21afff35cb659c6e52d8b4d61b9bd544557180440538f255d9382c8cbe0"},
+    {file = "platformdirs-2.5.4-py3-none-any.whl", hash = "sha256:af0276409f9a02373d540bf8480021a048711d572745aef4b7842dad245eba10"},
+    {file = "platformdirs-2.5.4.tar.gz", hash = "sha256:1006647646d80f16130f052404c6b901e80ee4ed6bef6792e1f238a8969106f7"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -3672,8 +3672,8 @@ validators = [
     {file = "validators-0.20.0.tar.gz", hash = "sha256:24148ce4e64100a2d5e267233e23e7afeb55316b47d30faae7eb6e7292bc226a"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.16.6-py3-none-any.whl", hash = "sha256:186ca84254abcbde98180fd17092f9628c5fe742273c02724972a1d8a2035108"},
-    {file = "virtualenv-20.16.6.tar.gz", hash = "sha256:530b850b523c6449406dfba859d6345e48ef19b8439606c5d74d7d3c9e14d76e"},
+    {file = "virtualenv-20.16.7-py3-none-any.whl", hash = "sha256:efd66b00386fdb7dbe4822d172303f40cd05e50e01740b19ea42425cbe653e29"},
+    {file = "virtualenv-20.16.7.tar.gz", hash = "sha256:8691e3ff9387f743e00f6bb20f70121f5e4f596cae754531f2b3b3a1b1ac696e"},
 ]
 visvalingamwyatt = [
     {file = "visvalingamwyatt-0.1.2-py2.py3-none-any.whl", hash = "sha256:d6866ddec26dca4d7c9cc18687cdab10fbfe8bf004a9277a14951e8b294489bf"},

@@ -1,22 +1,24 @@
 import logging
 from typing import Any, Dict, Iterable, List, Union
 
-from geo_utils.validate import ensure_valid_featurecollection
+from geo_utils.validate import ensure_valid_feature, ensure_valid_featurecollection
 from geo_utils.world import round_dec_degrees
 from joblib import Memory  # type: ignore
 from numpy.typing import ArrayLike
 from requests import get, post
-from shapely.geometry import shape
 
 from pixels_utils.constants.sentinel2 import SCL
 from pixels_utils.constants.titiler import (
     ENDPOINT_CROP,
+    ENDPOINT_INFO,
     ENDPOINT_STATISTICS,
     PIXELS_URL,
+    QUERY_ASSETS,
+    QUERY_URL,
     URL_PIXELS_CROP,
     URL_PIXELS_CROP_GEOJSON,
 )
-from pixels_utils.constants.types import STAC_crop, STAC_statistics
+from pixels_utils.constants.types import STAC_crop, STAC_info, STAC_statistics
 from pixels_utils.utilities import (  # find_geometry_from_geojson,
     get_assets_expression_query,
     get_nodata,
@@ -25,6 +27,30 @@ from pixels_utils.utilities import (  # find_geometry_from_geojson,
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
 memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done manually)
+
+
+def info_response(
+    scene_url: str,
+    assets: Iterable[str] = ("overview",),
+) -> STAC_info:
+    """
+    _summary_
+
+    Args:
+        scene_url (str): _description_
+        assets (Iterable[str], optional): _description_. Defaults to ("overview",).
+
+    Returns:
+        STAC_info: _description_
+    """
+    query = {
+        QUERY_URL: scene_url,
+        QUERY_ASSETS: assets,
+    }
+    return get(
+        PIXELS_URL.format(endpoint=ENDPOINT_INFO),
+        params=query,
+    )
 
 
 @memory.cache
@@ -40,7 +66,9 @@ def statistics_response(
     resampling: str = "nearest",
     categorical: bool = False,
     c: List[Union[float, int]] = None,
+    p: List[int] = None,
     histogram_bins: str = None,
+    histogram_range: ArrayLike = None,
     clear_cache: bool = False,
 ) -> STAC_statistics:
     """Return asset's statistics for a GeoJSON.
@@ -77,11 +105,17 @@ def statistics_response(
 
         categorical (bool, optional): Return statistics for categorical dataset. Default is False.
         c (List[Union[float, int]], optional): Pixels values for categories. Default is None.
+        p (List[int], optional): Percentile values. Default is None.
         histogram_bins (str, optional): Histogram bins. Default is None.
+        histogram_range (ArrayLike, optional): TODO: Asset/Expression specific min/max histogram bounds, e.g.:
+        `((0,1000), (0,1000), (0,3000), (0,2000))` corresponding to
+        `"histogram_range=0,1000, histogram_range=0,1000&histogram_range=0,3000&histogram_range=0,2000)"`. Default is
+        None.
+
         clear_cache (bool, optional): Whether to clear the cache; useful if the request returns an error and you want to
         actually retry the request (rather than having the cached data returned). Default is False.
     """
-    geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
+    geojson_fc = None if geojson is None else ensure_valid_featurecollection(geojson, create_new=False)
     nodata = get_nodata(scene_url, assets=assets, expression=expression) if nodata is None else nodata
 
     query, _ = get_assets_expression_query(
@@ -96,7 +130,9 @@ def statistics_response(
         resampling=resampling,
         categorical=categorical,
         c=c,
+        p=p,
         histogram_bins=histogram_bins,
+        histogram_range=histogram_range,
     )
     if clear_cache is True:
         headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
@@ -143,11 +179,11 @@ def crop_response(
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
     unscale: Union[bool, None] = None,
-    rescale: ArrayLike[Union[int, float]] = None,
+    rescale: ArrayLike = None,
     color_formula: Union[str, None] = None,
     colormap: Union[Dict, None] = None,
     colormap_name: Union[str, None] = None,
-    return_mask: bool = True,
+    return_mask: Union[bool, None] = None,
     format_stac: Union[str, None] = ".tif",
     clear_cache: bool = False,
 ) -> STAC_crop:
@@ -184,7 +220,7 @@ def crop_response(
         complete list of available resampling methods. Default is "nearest".
 
         unscale (Union[bool, NoneType], optional): Apply dataset internal Scale/Offset. Default is None.
-        rescale (ArrayLike[Union[int, float]], optional): TODO: Asset/Expression specific min/max range, e.g.:
+        rescale (ArrayLike, optional): TODO: Asset/Expression specific min/max range, e.g.:
         `((0,1000), (0,1000), (0,3000), (0,2000))` corresponding to
         `"rescale=0,1000, rescale=0,1000&rescale=0,3000&rescale=0,2000)"`. Default is None.
 
@@ -204,18 +240,24 @@ def crop_response(
         clear_cache (bool, optional): Whether to clear the cache; useful if the request returns an error and you want to
         actually retry the request (rather than having the cached data returned). Default is False.
     """
-    geojson_fc = ensure_valid_featurecollection(geojson, create_new=False)
+    geojson_f = None if geojson is None else ensure_valid_feature(geojson, create_new=False)
     nodata = get_nodata(scene_url, assets=assets, expression=expression) if nodata is None else nodata
-    query, _ = get_assets_expression_query(
+    query, asset_main = get_assets_expression_query(
         scene_url,
         assets=assets,
         expression=expression,
-        geojson=geojson_fc,
+        geojson=geojson_f,
         mask_scl=mask_scl,
         whitelist=whitelist,
         nodata=nodata,
         gsd=gsd,
         resampling=resampling,
+        unscale=unscale,
+        rescale=rescale,
+        color_formula=color_formula,
+        colormap=colormap,
+        colormap_name=colormap_name,
+        return_mask=return_mask,
     )
     if clear_cache is True:
         headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
@@ -224,10 +266,8 @@ def crop_response(
 
     query = {k: v for k, v in query.items() if k not in ["height", "width"]}
 
-    height, width = to_pixel_dimensions(geojson_fc, gsd)
-    # minx, miny, maxx, maxy = shape(find_geometry_from_geojson(geojson)).bounds
-
-    if geojson_fc is not None:
+    if geojson_f is not None:
+        height, width = to_pixel_dimensions(geojson_f, gsd)
         r = post(
             URL_PIXELS_CROP_GEOJSON.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
@@ -236,11 +276,12 @@ def crop_response(
                 format=format_stac,
             ),
             params=query,
-            json=geojson_fc,
+            json=geojson_f,
             headers=headers,
         )
     else:
-        minx, miny, maxx, maxy = shape(geojson_fc).bounds
+        info = info_response(scene_url, assets=(asset_main,)).json()[asset_main]
+        minx, miny, maxx, maxy = info["bounds"]
         r = get(
             URL_PIXELS_CROP.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
@@ -248,8 +289,8 @@ def crop_response(
                 miny=round_dec_degrees(miny, n_decimal_places=6),
                 maxx=round_dec_degrees(maxx, n_decimal_places=6),
                 maxy=round_dec_degrees(maxy, n_decimal_places=6),
-                width=width,
-                height=height,
+                width=info["width"],
+                height=info["height"],
                 format=format_stac,
             ),
             params=query,

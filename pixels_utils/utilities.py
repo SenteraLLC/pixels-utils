@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Tuple, Union
 
 from geo_utils.validate import ensure_valid_geometry, get_all_geojson_geometries
 from geopy.distance import distance
+from numpy.typing import ArrayLike
 from requests import get
 from shapely.geometry import shape
 
@@ -14,11 +15,19 @@ from pixels_utils.constants.titiler import (
     QUERY_ASSETS,
     QUERY_C,
     QUERY_CATEGORICAL,
+    QUERY_COLOR_FORMULA,
+    QUERY_COLORMAP,
+    QUERY_COLORMAP_NAME,
     QUERY_EXPRESSION,
     QUERY_HEIGHT,
     QUERY_HISTOGRAM_BINS,
+    QUERY_HISTOGRAM_RANGE,
     QUERY_NODATA,
+    QUERY_P,
     QUERY_RESAMPLING,
+    QUERY_RESCALE,
+    QUERY_RETURN_MASK,
+    QUERY_UNSCALE,
     QUERY_URL,
     QUERY_WIDTH,
 )
@@ -57,7 +66,15 @@ def get_assets_expression_query(
     resampling: str = "nearest",
     categorical: bool = False,
     c: List[Union[float, int]] = None,
+    p: List[int] = None,
     histogram_bins: str = None,
+    histogram_range: ArrayLike = None,
+    unscale: Union[bool, None] = None,
+    rescale: ArrayLike = None,
+    color_formula: Union[str, None] = None,
+    colormap: Union[Dict, None] = None,
+    colormap_name: Union[str, None] = None,
+    return_mask: Union[bool, None] = None,
 ) -> Tuple[Dict, str]:
     """Creates the full query to be passed to GET or POST.
 
@@ -69,78 +86,129 @@ def get_assets_expression_query(
     asset_main = _check_asset_main(assets)
     # geojson = ensure_valid_geometry(geojson, keys=["coordinates", "type"])
     height, width = to_pixel_dimensions(geojson, gsd)
+    query = {QUERY_URL: scene_url}
 
     if assets is not None and mask_scl is not None:
-        query = {
-            QUERY_URL: scene_url,
-            QUERY_ASSETS: build_numexpr_scl_mask(
-                assets=assets,
-                mask_scl=mask_scl,
-                whitelist=whitelist,
-                mask_value=nodata,
-            ),
-            QUERY_NODATA: nodata,
-            QUERY_HEIGHT: height,
-            QUERY_WIDTH: width,
-            QUERY_RESAMPLING: resampling,
-            QUERY_CATEGORICAL: str(categorical).lower(),
-            QUERY_C: c,
-            QUERY_HISTOGRAM_BINS: histogram_bins,
-        }
+        logging.warning("`assets` do not accept numexpr functions, so `mask_scl` will be ignored.")
+        query.update({QUERY_ASSETS: assets})
+        # query.update(
+        #     {
+        #         QUERY_ASSETS: build_numexpr_scl_mask(
+        #             assets=assets,
+        #             mask_scl=mask_scl,
+        #             whitelist=whitelist,
+        #             mask_value=nodata,
+        #         )
+        #     }
+        # )
     elif assets is not None and mask_scl is None:
-        query = {
-            QUERY_URL: scene_url,
-            QUERY_ASSETS: assets,
-            QUERY_NODATA: nodata,
-            QUERY_HEIGHT: height,
-            QUERY_WIDTH: width,
-            QUERY_RESAMPLING: resampling,
-            QUERY_CATEGORICAL: str(categorical).lower(),
-            QUERY_C: c,
-            QUERY_HISTOGRAM_BINS: histogram_bins,
-        }
+        query.update({QUERY_ASSETS: assets})
 
     if expression is not None and mask_scl is not None:
-        query = {
-            QUERY_URL: scene_url,
-            QUERY_EXPRESSION: build_numexpr_scl_mask(
-                expression=expression,
-                mask_scl=mask_scl,
-                whitelist=whitelist,
-                mask_value=nodata,
-            ),
-            QUERY_NODATA: nodata,
-            QUERY_HEIGHT: height,
-            QUERY_WIDTH: width,
-            QUERY_RESAMPLING: resampling,
-            QUERY_CATEGORICAL: str(categorical).lower(),
-            QUERY_C: c,
-            QUERY_HISTOGRAM_BINS: histogram_bins,
-        }
-        # query = {
-        #     QUERY_URL: scene_url,
-        #     QUERY_EXPRESSION: build_numexpr_scl_mask(
-        #         expression=expression,
-        #         mask_scl=mask_scl,
-        #         whitelist=whitelist,
-        #         nodata=nodata,
-        #     ),
-        #     QUERY_NODATA: nodata,
-        # }
+        query.update(
+            {
+                QUERY_EXPRESSION: build_numexpr_scl_mask(
+                    expression=expression,
+                    mask_scl=mask_scl,
+                    whitelist=whitelist,
+                    mask_value=nodata,
+                )
+            }
+        )
     elif expression is not None and mask_scl is None:
-        query = {
-            QUERY_URL: scene_url,
-            QUERY_EXPRESSION: expression,
+        query.update({QUERY_EXPRESSION: expression})
+
+    query.update(
+        {
             QUERY_NODATA: nodata,
             QUERY_HEIGHT: height,
             QUERY_WIDTH: width,
             QUERY_RESAMPLING: resampling,
             QUERY_CATEGORICAL: str(categorical).lower(),
             QUERY_C: c,
+            QUERY_P: p,
             QUERY_HISTOGRAM_BINS: histogram_bins,
+            QUERY_HISTOGRAM_RANGE: histogram_range,
+            QUERY_UNSCALE: unscale,
+            QUERY_RESCALE: rescale,
+            QUERY_COLOR_FORMULA: color_formula,
+            QUERY_COLORMAP: colormap,
+            QUERY_COLORMAP_NAME: colormap_name,
+            QUERY_RETURN_MASK: return_mask,
         }
+    )
     query_drop_null = {k: v for k, v in query.items() if v is not None}
     return query_drop_null, asset_main
+
+    # if assets is not None and mask_scl is not None:
+    #     query = {
+    #         QUERY_URL: scene_url,
+    #         QUERY_ASSETS: build_numexpr_scl_mask(
+    #             assets=assets,
+    #             mask_scl=mask_scl,
+    #             whitelist=whitelist,
+    #             mask_value=nodata,
+    #         ),
+    #         QUERY_NODATA: nodata,
+    #         QUERY_HEIGHT: height,
+    #         QUERY_WIDTH: width,
+    #         QUERY_RESAMPLING: resampling,
+    #         QUERY_CATEGORICAL: str(categorical).lower(),
+    #         QUERY_C: c,
+    #         QUERY_HISTOGRAM_BINS: histogram_bins,
+    #     }
+    # elif assets is not None and mask_scl is None:
+    #     query = {
+    #         QUERY_URL: scene_url,
+    #         QUERY_ASSETS: assets,
+    #         QUERY_NODATA: nodata,
+    #         QUERY_HEIGHT: height,
+    #         QUERY_WIDTH: width,
+    #         QUERY_RESAMPLING: resampling,
+    #         QUERY_CATEGORICAL: str(categorical).lower(),
+    #         QUERY_C: c,
+    #         QUERY_HISTOGRAM_BINS: histogram_bins,
+    #     }
+
+    # if expression is not None and mask_scl is not None:
+    #     query = {
+    #         QUERY_URL: scene_url,
+    #         QUERY_EXPRESSION: build_numexpr_scl_mask(
+    #             expression=expression,
+    #             mask_scl=mask_scl,
+    #             whitelist=whitelist,
+    #             mask_value=nodata,
+    #         ),
+    #         QUERY_NODATA: nodata,
+    #         QUERY_HEIGHT: height,
+    #         QUERY_WIDTH: width,
+    #         QUERY_RESAMPLING: resampling,
+    #         QUERY_CATEGORICAL: str(categorical).lower(),
+    #         QUERY_C: c,
+    #         QUERY_HISTOGRAM_BINS: histogram_bins,
+    #     }
+    #     query = {
+    #         QUERY_URL: scene_url,
+    #         QUERY_EXPRESSION: build_numexpr_scl_mask(
+    #             expression=expression,
+    #             mask_scl=mask_scl,
+    #             whitelist=whitelist,
+    #             nodata=nodata,
+    #         ),
+    #         QUERY_NODATA: nodata,
+    #     }
+    # elif expression is not None and mask_scl is None:
+    #     query = {
+    #         QUERY_URL: scene_url,
+    #         QUERY_EXPRESSION: expression,
+    #         QUERY_NODATA: nodata,
+    #         QUERY_HEIGHT: height,
+    #         QUERY_WIDTH: width,
+    #         QUERY_RESAMPLING: resampling,
+    #         QUERY_CATEGORICAL: str(categorical).lower(),
+    #         QUERY_C: c,
+    #         QUERY_HISTOGRAM_BINS: histogram_bins,
+    #     }
 
 
 def get_nodata(

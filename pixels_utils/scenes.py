@@ -62,7 +62,7 @@ def get_stac_scenes(
     summary = [line.split() for line in results_str.splitlines()]
     cols = summary[1]
     data = summary[2:]
-    return DataFrame(data=data, columns=cols)
+    return DataFrame(data=data, columns=cols).sort_values(by="datetime", ascending=True, ignore_index=True)
     # return list(result), list(result.properties("datetime")), list(result.properties("eo:cloud_cover"))
 
 
