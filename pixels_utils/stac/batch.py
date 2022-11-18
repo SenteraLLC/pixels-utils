@@ -26,7 +26,7 @@ try:
     from rasterio import Env
     from rasterio.profiles import Profile
 
-    from pixels_utils.rasterio import combine_profile_tags
+    from pixels_utils.rasterio_helper import combine_profile_tags
 except ImportError:
     logging.exception("Optional dependency <rasterio> not imported. Some features are not available.")
 
@@ -73,6 +73,7 @@ def statistics(
     date_start: Union[date, str],
     date_end: Union[date, str],
     geojson: Any = None,
+    collection: str = SENTINEL_2_L2A_COLLECTION,
     assets: Iterable[str] = None,
     expression: str = None,
     mask_scl: Iterable[SCL] = None,
@@ -80,7 +81,6 @@ def statistics(
     nodata: Union[int, float] = None,
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
-    collection: str = SENTINEL_2_L2A_COLLECTION,
     categorical: bool = False,
     c: List[Union[float, int]] = None,
     histogram_bins: str = None,
