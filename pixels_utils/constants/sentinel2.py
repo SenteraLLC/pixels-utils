@@ -7,7 +7,8 @@ SENTINEL_2_L2A_COLLECTION = "sentinel-s2-l2a-cogs"
 SENTINEL_2_L1C_COLLECTION = "sentinel-s2-l1c-cogs"
 
 
-ASSETS_TCI = ("visual",)
+# ASSETS_TCI = ("visual",)
+ASSETS_TCI = ("B04", "B03", "B02")
 ASSETS_OVERVIEW = ("overview",)
 ASSETS_MSI = (
     "B02",
