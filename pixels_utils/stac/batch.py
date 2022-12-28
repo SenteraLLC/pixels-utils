@@ -202,7 +202,7 @@ def statistics(
             stats_dict["whitelist_pct"] = whitelist_pct
             meta_dict["scl_hist_count"] = scl_hist_count
             meta_dict["scl_hist_pct"] = scl_hist_pct
-            meta_dict["request_time_scl"] = meta_dict_scl["request_time_scl"]
+            meta_dict["request_time_scl"] = meta_dict_scl["request_time"]
             if "histogram" in stats_dict:
                 del stats_dict["histogram"]
             logging.info("Retrieving scene %s/%s: SUCCESS", i + 1, len(df_scenes))
