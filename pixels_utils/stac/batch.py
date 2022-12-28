@@ -174,12 +174,15 @@ def statistics(
                 k: v for k, v in stats_kwargs.items() if k not in ["assets", "expression", "mask_scl", "whitelist"]
             }
             stats_kwargs_scl["expression"] = "SCL"
-            stats_kwargs_scl["histogram_bins"] = ",".join([str(i.numerator) for i in SCL])
+            stats_kwargs_scl["histogram_bins"] = ",".join(
+                [str(i.numerator) for i in SCL] + [str(1 + max(SCL).numerator)]
+            )
+            stats_kwargs_scl["histogram_range"] = None
             stats_dict_scl, meta_dict_scl = run_stats(
                 acquisition_time,
                 stats_kwargs_scl,
                 cloud_cover_scene_pct,
-                clear_cache_iter=iter([False, True, True]),
+                clear_cache_iter=iter([True, True, True]),
             )
 
             (
