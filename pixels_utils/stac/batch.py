@@ -182,7 +182,7 @@ def statistics(
                 acquisition_time,
                 stats_kwargs_scl,
                 cloud_cover_scene_pct,
-                clear_cache_iter=iter([True, True, True]),
+                clear_cache_iter=iter([False, True, True]),
             )
 
             (
