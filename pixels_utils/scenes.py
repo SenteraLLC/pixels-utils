@@ -3,6 +3,7 @@ from typing import Dict, Iterator, Tuple, Union
 
 from geo_utils.validate import ensure_valid_geometry
 from pandas import DataFrame
+from retry import retry
 from satsearch import Search  # type: ignore
 
 from pixels_utils.constants.sentinel2 import ELEMENT84_SEARCH_URL, SENTINEL_2_L2A_COLLECTION
@@ -18,6 +19,7 @@ def bbox_from_geometry(geometry: Dict) -> BoundingBox:
     return (min(lngs), min(lats), max(lngs), max(lats))
 
 
+@retry((RuntimeError, KeyError), tries=3, delay=2)
 def get_stac_scenes(
     bounding_box: BoundingBox,
     date_start: Union[date, str],
