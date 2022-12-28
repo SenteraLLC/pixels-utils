@@ -174,6 +174,7 @@ def statistics(
                 k: v for k, v in stats_kwargs.items() if k not in ["assets", "expression", "mask_scl", "whitelist"]
             }
             stats_kwargs_scl["expression"] = "SCL"
+            stats_kwargs_scl["histogram_bins"] = ",".join([str(i.numerator) for i in SCL])
             stats_dict_scl, meta_dict_scl = run_stats(
                 acquisition_time,
                 stats_kwargs_scl,
@@ -181,17 +182,6 @@ def statistics(
                 clear_cache_iter=iter([False, True, True]),
             )
 
-            # stats_dict_scl, meta_dict_scl = scl_stats(
-            #     stats_kwargs["scene_url"],
-            #     geojson_fc,
-            #     whitelist,
-            #     nodata,
-            #     gsd,
-            #     resampling,
-            #     acquisition_time=acquisition_time,
-            #     cloud_cover_scene_pct=cloud_cover_scene_pct,
-            #     clear_cache_iter=iter([False, True, True]),
-            # )
             (
                 whitelist_pixels,
                 whitelist_pct,
