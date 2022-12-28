@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Iterable, List, Union
 
 from geo_utils.validate import ensure_valid_feature, ensure_valid_featurecollection
-from geo_utils.world import round_dec_degrees
+from geo_utils.world import round_coordinate
 from joblib import Memory  # type: ignore
 from numpy.typing import ArrayLike
 from requests import get, post
@@ -179,6 +179,7 @@ def crop_response(
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
     unscale: Union[bool, None] = None,
+    clip: ArrayLike = None,
     rescale: ArrayLike = None,
     color_formula: Union[str, None] = None,
     colormap: Union[Dict, None] = None,
@@ -220,10 +221,12 @@ def crop_response(
         complete list of available resampling methods. Default is "nearest".
 
         unscale (Union[bool, NoneType], optional): Apply dataset internal Scale/Offset. Default is None.
-        rescale (ArrayLike, optional): TODO: Asset/Expression specific min/max range, e.g.:
-        `((0,1000), (0,1000), (0,3000), (0,2000))` corresponding to
-        `"rescale=0,1000, rescale=0,1000&rescale=0,3000&rescale=0,2000)"`. Default is None.
+        clip (ArrayLike, optional): Min/Max data Rescaling. Comma (',') delimited Min,Max range. Can set multiple time
+        for multiple bands. For example=["0,2000", "0,1000", "0,10000"] for bands 1, 2, 3, respectively. Note that to
+        avoid confusion, this `clip` argument is an alias that points to the titiler `rescale` parameter. Default is
+        None.
 
+        rescale (ArrayLike, optional): See `clip`. Default is None.
         color_formula (Union[str, None], optional): Rio-color formula. CAUTION: USE ONLY FOR VISUALIZATION (i.e., will
         result in loss of data integrity). Default is None.
 
@@ -242,6 +245,14 @@ def crop_response(
     """
     geojson_f = None if geojson is None else ensure_valid_feature(geojson, create_new=False)
     nodata = get_nodata(scene_url, assets=assets, expression=expression) if nodata is None else nodata
+    if clip is None and rescale is not None:  # rescale is an alias for clip
+        clip = rescale
+        logging.warning(
+            "Titiler `rescale` clips data to a lower and upper value (i.e., clamps data). It does not actually rescale "
+            "the data. It's use may be misleading."
+        )
+    else:
+        clip = None
     query, asset_main = get_assets_expression_query(
         scene_url,
         assets=assets,
@@ -253,7 +264,7 @@ def crop_response(
         gsd=gsd,
         resampling=resampling,
         unscale=unscale,
-        rescale=rescale,
+        rescale=clip,  # pass clip to rescale
         color_formula=color_formula,
         colormap=colormap,
         colormap_name=colormap_name,
@@ -263,8 +274,6 @@ def crop_response(
         headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
     else:
         headers = {}
-
-    query = {k: v for k, v in query.items() if k not in ["height", "width"]}
 
     if geojson_f is not None:
         height, width = to_pixel_dimensions(geojson_f, gsd)
@@ -285,10 +294,10 @@ def crop_response(
         r = get(
             URL_PIXELS_CROP.format(
                 pixels_endpoint=PIXELS_URL.format(endpoint=ENDPOINT_CROP),
-                minx=round_dec_degrees(minx, n_decimal_places=6),
-                miny=round_dec_degrees(miny, n_decimal_places=6),
-                maxx=round_dec_degrees(maxx, n_decimal_places=6),
-                maxy=round_dec_degrees(maxy, n_decimal_places=6),
+                minx=round_coordinate(minx, n_decimal_places=6)[0],
+                miny=round_coordinate(miny, n_decimal_places=6)[0],
+                maxx=round_coordinate(maxx, n_decimal_places=6)[0],
+                maxy=round_coordinate(maxy, n_decimal_places=6)[0],
                 width=info["width"],
                 height=info["height"],
                 format=format_stac,
