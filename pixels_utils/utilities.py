@@ -89,7 +89,7 @@ def get_assets_expression_query(
     query = {QUERY_URL: scene_url}
 
     if assets is not None and mask_scl is not None:
-        logging.warning("`assets` do not accept numexpr functions, so `mask_scl` will be ignored.")
+        logging.info("`assets` do not accept numexpr functions, so `mask_scl` will be ignored.")
         query.update({QUERY_ASSETS: assets})
         # query.update(
         #     {
