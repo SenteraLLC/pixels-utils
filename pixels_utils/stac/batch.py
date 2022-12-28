@@ -1,7 +1,7 @@
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Type, Union
 
 import pytz
 from geo_utils.validate import ensure_valid_feature, ensure_valid_featurecollection, get_all_geojson_geometries
@@ -27,6 +27,9 @@ from pixels_utils.utils_statistics import (
 
 try:
     from geo_utils.raster import save_rasterio
+    from rasterio import uint16
+    from rasterio._err import CPLE_OpenFailedError
+    from rasterio.errors import RasterioIOError
     from rasterio.profiles import Profile
 
     from pixels_utils.utils_crop import parse_crop_response
@@ -173,7 +176,7 @@ def statistics(
             stats_kwargs_scl["expression"] = "SCL"
             stats_dict_scl, meta_dict_scl = run_stats(
                 acquisition_time,
-                stats_kwargs,
+                stats_kwargs_scl,
                 cloud_cover_scene_pct,
                 clear_cache_iter=iter([False, True, True]),
             )
@@ -252,25 +255,33 @@ def crop(
     gsd: Union[int, float] = 20,
     resampling: str = "nearest",
     unscale: Union[bool, None] = None,
-    rescale: ArrayLike = None,
+    clip: ArrayLike = None,
+    # rescale: ArrayLike = None,  # ["0,255", "0,255", "0,255"]
     color_formula: Union[str, None] = None,
     colormap: Union[Dict, None] = None,
     colormap_name: Union[str, None] = None,
     return_mask: Union[bool, None] = None,
     format_stac: Union[str, None] = ".tif",
     crs: CRS = CRS.from_epsg(4326),
+    dtype: Type = uint16,
     dir_out: Path = None,
     minimum_whitelist: Union[int, float] = None,
     max_images: Union[int, float] = None,
+    fname_suffix: str = None,
 ) -> Tuple[np_ndarray, Profile]:
     geojson_f = None if geojson is None else ensure_valid_feature(geojson, create_new=False)
     # in this case, <next> returns only the first geometry.
     # TODO: Should there be a warning or exception raised if there happen to be multiple geometries passed?
-    df_scenes = get_stac_scenes(
-        bbox_from_geometry(next(get_all_geojson_geometries(geojson_f))),
-        date_start,
-        date_end,
-    )
+    try:
+        df_scenes = get_stac_scenes(
+            bbox_from_geometry(next(get_all_geojson_geometries(geojson_f))),
+            date_start,
+            date_end,
+        )
+    except RuntimeError:
+        logging.info("Unable to retrieve scenes due to RuntimeError: %s", fname_suffix)
+        return
+
     # df_scenes = get_stac_scenes(bbox_from_geometry(geojson_fc), date_start, date_end)
     if len(df_scenes) > 0:
         logging.info("Getting STAC crop rasters. Number of scenes: %s", len(df_scenes))
@@ -289,7 +300,8 @@ def crop(
         "gsd": gsd,
         "resampling": resampling,
         "unscale": unscale,
-        "rescale": rescale,
+        "clip": clip,
+        "rescale": None,  # Titiler does not rescale the data
         "color_formula": color_formula,
         "colormap": colormap,
         "colormap_name": colormap_name,
@@ -299,13 +311,14 @@ def crop(
 
     img_count = 0
     for i, scene in df_scenes.iterrows():
-        # if i > -1:
+        # if i > 2:
         #     break
         crop_kwargs["scene_url"] = ELEMENT84_L2A_SCENE_URL.format(collection=collection, sceneid=scene["id"])
         acquisition_time = scene["datetime"]
         cloud_cover_scene_pct = scene["eo:cloud_cover"]
+        logging.debug("Scene URL: %s", crop_kwargs["scene_url"])
 
-        @retry(KeyError, tries=3, delay=2)
+        @retry((RuntimeError, KeyError), tries=3, delay=2)
         def run_crop(
             acquisition_time: str = None,
             crop_kwargs: Dict = None,
@@ -330,12 +343,15 @@ def crop(
             data, profile, tags = parse_crop_response(  # Must be in same function as crop_response() call
                 r, **scene_tags, pixels_params=pixels_params
             )
+            # Uncomment rescale_stac_crop if/when we want to implement this (should be tested).
+            # data = rescale_stac_crop(data, rescale, dtype) if rescale else data
+
             # Update profile with stats
-            band_names = (
-                (pixels_params["expression"],)
-                if isinstance(pixels_params["expression"], str)
-                else pixels_params["expression"]
-            )
+            if "assets" in pixels_params:
+                band_list = pixels_params["assets"]
+            elif "expression" in pixels_params:
+                band_list = pixels_params["expression"]
+            band_names = (band_list,) if isinstance(band_list, str) else band_list
             tags["geojson_stats"] = count_geojson_pixels(data, band_names)
             return data, profile, tags
 
@@ -345,25 +361,25 @@ def crop(
                 acquisition_time,
                 crop_kwargs,
                 cloud_cover_scene_pct,
-                clear_cache_iter=iter([True, True, True]),
+                clear_cache_iter=iter([False, True, True]),
             )
-            if crop_kwargs["mask_scl"]:  # only get SCL if first request had masking by SCL performed
-                crop_kwargs_scl = {
-                    k: v for k, v in crop_kwargs.items() if k not in ["assets", "expression", "mask_scl", "whitelist"]
-                }
-                crop_kwargs_scl["expression"] = "SCL"
-                # crop_kwargs_scl["nodata"] = -1
-                data_scl, profile_scl, tags_scl = run_crop(
-                    acquisition_time,
-                    crop_kwargs_scl,
-                    cloud_cover_scene_pct,
-                    clear_cache_iter=iter([True, True, True]),
-                )
-                tags["mask_scl_stats"] = count_valid_whitelist_pixels(data_scl, mask_scl, whitelist)
-                tags["request_time_scl"] = tags_scl["request_time"]
-            else:
-                tags["mask_scl_stats"] = None
-                tags["request_time_scl"] = None
+            # if crop_kwargs["mask_scl"]:  # only get SCL if first request had masking by SCL performed
+            crop_kwargs_scl = {
+                k: v for k, v in crop_kwargs.items() if k not in ["assets", "expression", "mask_scl", "whitelist"]
+            }
+            crop_kwargs_scl["expression"] = "SCL"
+            # crop_kwargs_scl["nodata"] = -1
+            data_scl, profile_scl, tags_scl = run_crop(
+                acquisition_time,
+                crop_kwargs_scl,
+                cloud_cover_scene_pct,
+                clear_cache_iter=iter([False, True, True]),
+            )
+            tags["mask_scl_stats"] = count_valid_whitelist_pixels(data_scl, mask_scl, whitelist)
+            tags["request_time_scl"] = tags_scl["request_time"]
+            # else:
+            #     tags["mask_scl_stats"] = None
+            #     tags["request_time_scl"] = None
             logging.info("Retrieving scene %s/%s: SUCCESS", i + 1, len(df_scenes))
         except TypeError:  # Fill in what we can so program can continue for other scenes in date range.
             data, profile, tags = None, None, None
@@ -371,21 +387,30 @@ def crop(
         except KeyError:
             data, profile, tags = None, None, None
             logging.warning("Retrieving scene %s/%s: KeyError", i + 1, len(df_scenes))
+        except RuntimeError:
+            data, profile, tags = None, None, None
+            logging.warning("Retrieving scene %s/%s: RuntimeError", i + 1, len(df_scenes))
+        except RasterioIOError:
+            data, profile, tags = None, None, None
+            logging.warning("Retrieving scene %s/%s: RasterioIOError", i + 1, len(df_scenes))
+        except CPLE_OpenFailedError:
+            data, profile, tags = None, None, None
+            logging.warning("Retrieving scene %s/%s: CPLE_OpenFailedError", i + 1, len(df_scenes))
 
-        logging.debug("Scene URL: %s", crop_kwargs["scene_url"])
         if data is None or profile is None:
             continue
         if tags["mask_scl_stats"]["whitelist_pct"] >= minimum_whitelist:
             # data_out, profile_out = geoml_metadata(data, profile)
             # geojson_hash = int(hashlib.sha256(dumps(geojson).encode("utf-8")).hexdigest(), 16) % 10**6
             # fname_out = "_".join([scene["id"], "sha256-" + str(geojson_hash)]) + format_stac
-            fname_out = "_".join([scene["id"], f"{dir_out.parts[-1]}"]) + format_stac
+            fname_suffix = "" if fname_suffix is None else fname_suffix
+            fname_out = "_".join([scene["id"], str(fname_suffix)]) + format_stac
             band_names = (
                 (crop_kwargs["expression"],)
                 if isinstance(crop_kwargs["expression"], str)
                 else crop_kwargs["expression"]
             )
-
+            profile["dtype"] = dtype
             save_rasterio(
                 dir_out=dir_out,
                 fname_out=fname_out,

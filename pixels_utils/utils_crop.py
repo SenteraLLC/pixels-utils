@@ -9,9 +9,10 @@ from numpy import logical_not as np_logical_not
 from numpy import min_scalar_type as np_min_scalar_type
 from numpy import ndarray as np_ndarray
 from numpy import repeat as np_repeat
+from numpy import zeros_like
 from numpy.ma import count as npma_count
 from numpy.ma import count_masked as npma_count_masked
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, DTypeLike
 
 from pixels_utils.constants.decorators import requires_rasterio
 from pixels_utils.constants.sentinel2 import SCL
@@ -169,29 +170,52 @@ def mask_stac_crop(data: ArrayLike, profile: Profile, nodata: Union[float, int] 
 
 @requires_rasterio
 def parse_crop_response(r: STAC_crop, **kwargs) -> Tuple[ArrayLike, Profile]:
-    # data, profile = crop(r)  # batch.crop
-    if "nodata" in kwargs:
-        nodata = kwargs["nodata"]
-    else:
-        nodata = None
-
-    # ds = response_to_rasterio(r)
+    nodata = kwargs.get("nodata")  # gets value if key exists, else sets to None
     with Env(), response_to_rasterio(r) as ds:
-        # data = ds.read()
         data = ds.read(masked=False)
         profile = ds.profile
         tags = ds.tags()
-        # print(ds.tags())
-        # print(ds.tag_namespaces())
-        # for ns in ds.tag_namespaces():
-        #     print(ds.tags(ns=ns))
-        #     tags.update(**ds.tags(ns=ns))
-        # profile = combine_profile_tags(ds)
     data_mask, profile_mask = mask_stac_crop(data, profile, nodata=nodata)
     tags.update(**profile_mask)
     tags.update(**kwargs)
     # profile_mask.update(**kwargs)
     return data_mask, profile_mask, tags
+
+
+def rescale_stac_crop(data: ArrayLike, rescale: Iterable[str], dtype: DTypeLike) -> ArrayLike:
+    """
+    Rescales STAC crop data.
+
+    Args:
+        data (ArrayLike): Data to be scaled (should be 3-dimensional).
+        rescale (Iterable[str]): How to scale the data. Should be formatted as an iterable of strings, where the number
+        of strings is equal to the length of the first dimension of `data`. Each string should be a comma-separated
+        integer, expressed as a string (e.g., ["0,255", "0,255", "0,255"]). This example presumes `data` has 3 bands,
+        and will rescale each of its 3 bands between 0 and 255.
+        dtype (DTypeLike): The dtype to format the scaled data.
+
+    Raises:
+        RuntimeError: If `rescale` is not formatted properly.
+
+    Returns:
+        ArrayLike: The scaled data array.
+    """
+    data_scaled = zeros_like(data, dtype=dtype)
+    if len(rescale) == data.shape[0]:
+        for i, limits in enumerate(rescale):
+            assert len(limits.split(",")) == 2
+            # l = int(limits.split(",")[0])
+            # u = int(limits.split(",")[1])
+            # scale_factor = 10000 / (u - l)
+            # data_scaled[i, :, :] = (data[i, :, :].data - l) / scale_factor
+            lower = data[i, :, :].data.min()
+            upper = data[i, :, :].data.max()
+            max_value = int(limits.split(",")[1])
+            # min_value = int(limits.split(",")[0])
+            data_scaled[i, :, :] = (data[i, :, :].data - lower) / (upper - lower) * max_value
+    else:
+        raise RuntimeError("<rescale> argument must be the same length as data ({data.shape[0]}).")
+    return data_scaled
 
 
 @requires_rasterio
