@@ -25,17 +25,15 @@ from pixels_utils.utils_statistics import (
     parse_stats_response_blank,
 )
 
-# try:
-from geo_utils.raster import save_rasterio
-from rasterio import uint16
-from rasterio._err import CPLE_OpenFailedError
-from rasterio.errors import RasterioIOError
-from rasterio.profiles import Profile
-
-from pixels_utils.utils_crop import parse_crop_response
-
-# except ImportError:
-#     logging.exception("Optional dependency <rasterio> not imported. Some features are not available.")
+try:
+    from geo_utils.format_fa._raster import save_rasterio
+    from rasterio import uint16
+    from rasterio._err import CPLE_OpenFailedError
+    from rasterio.errors import RasterioIOError
+    from rasterio.profiles import Profile
+    from pixels_utils.utils_crop import parse_crop_response
+except ImportError:
+    logging.exception("Optional dependency <rasterio> not imported. Some features are not available.")
 
 
 # @retry(KeyError, tries=3, delay=2)
