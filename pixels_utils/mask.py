@@ -24,7 +24,7 @@ def _build_mask_by_assignment(scl_assignment, else_value):
         else_value_final = _build_mask_by_assignment(scl_assignment, else_value)
     except StopIteration:
         else_value_final = else_value
-    return f"where(SCL == {int(scl)}, {assignment}, {else_value_final})"
+    return f"where(SCL=={int(scl)},{assignment},{else_value_final})"
 
 
 def build_numexpr_scl_mask(
@@ -35,6 +35,11 @@ def build_numexpr_scl_mask(
     mask_value: Union[int, float] = 0.0,
 ) -> str:
     """Builds the NumExpr where clause based on assets/expression and SCL list.
+
+    Note:
+        Multiple expressions must be semicolon (;) delimited (e.g., "b1/b2;b2+b3").
+        Refer to the [titiler source code](https://github.com/developmentseed/titiler/blob/495531cc81d7fb4e06299f6bd390d19048533373/src/titiler/core/titiler/core/dependencies.py#L122-L124)
+        for more information.
 
     Args:
         assets ():
@@ -51,32 +56,32 @@ def build_numexpr_scl_mask(
         str: _description_
     """
     mask_value = 0.0 if mask_value is None else mask_value
-    if assets is not None and mask_scl is not None:
-        assets = [assets] if isinstance(assets, str) else assets
-        if whitelist is True:
-            scl_assignment = ((scl, "{asset}") for scl in mask_scl)
-            numexpr_str_template = "{0};".format(
-                _build_mask_by_assignment(scl_assignment, else_value=mask_value)
-            )
-        else:  # blacklist
-            scl_assignment = ((scl, mask_value) for scl in mask_scl)
-            numexpr_str_template = "{0};".format(
-                _build_mask_by_assignment(scl_assignment, else_value="{asset}")
-            )
-        return [numexpr_str_template.format(asset=asset) for asset in assets]
-    elif assets is not None and mask_scl is None:
+    # assets` do not accept numexpr functions, so `mask_scl` will be ignored.
+    if assets is not None:
         return assets
 
     if expression is not None and mask_scl is not None:
+        expression = [expression] if isinstance(expression, str) else expression
         if whitelist is True:
-            scl_assignment = ((scl, expression) for scl in mask_scl)
-            return "{0};".format(
-                _build_mask_by_assignment(scl_assignment, else_value=mask_value)
-            )
-        else:
+            scl_assignment = ((scl, "{expr}") for scl in mask_scl)
+            numexpr_str_template = "{0};".format(_build_mask_by_assignment(scl_assignment, else_value=mask_value))
+        else:  # blacklist
             scl_assignment = ((scl, mask_value) for scl in mask_scl)
-            return "{0};".format(
-                _build_mask_by_assignment(scl_assignment, else_value=expression)
-            )
+            numexpr_str_template = "{0};".format(_build_mask_by_assignment(scl_assignment, else_value="{asset}"))
+        return "".join([numexpr_str_template.format(expr=expr) for expr in expression])
     elif expression is not None and mask_scl is None:
         return expression
+
+    # if expression is not None and mask_scl is not None:
+    #     if whitelist is True:
+    #         scl_assignment = ((scl, expression) for scl in mask_scl)
+    #         return "{0};".format(
+    #             _build_mask_by_assignment(scl_assignment, else_value=mask_value)
+    #         )
+    #     else:
+    #         scl_assignment = ((scl, mask_value) for scl in mask_scl)
+    #         return "{0};".format(
+    #             _build_mask_by_assignment(scl_assignment, else_value=expression)
+    #         )
+    # elif expression is not None and mask_scl is None:
+    #     return expression

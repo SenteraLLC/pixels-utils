@@ -1,16 +1,15 @@
 from enum import IntEnum
 
 ELEMENT84_SEARCH_URL = "https://earth-search.aws.element84.com/v0/search"
-ELEMENT84_L2A_SCENE_URL = (
-    "https://earth-search.aws.element84.com/v0/"
-    "collections/{collection}/items/{sceneid}"
-)
+ELEMENT84_L2A_SCENE_URL = "https://earth-search.aws.element84.com/v0/" "collections/{collection}/items/{sceneid}"
 
 SENTINEL_2_L2A_COLLECTION = "sentinel-s2-l2a-cogs"
 SENTINEL_2_L1C_COLLECTION = "sentinel-s2-l1c-cogs"
 
 
-ASSETS_TCI = ("visual",)
+# ASSETS_TCI = ("visual",)
+ASSETS_TCI = ("B04", "B03", "B02")
+ASSETS_OVERVIEW = ("overview",)
 ASSETS_MSI = (
     "B02",
     "B03",

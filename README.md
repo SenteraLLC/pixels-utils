@@ -35,9 +35,65 @@ Install `pixels-utils` and all its dependencies via `poetry install`.
 poetry install
 ```
 
+### Logging style
+This library uses the `"%s"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, style should be set as `style="%s"` (this is the default). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).
+
+For example:
+
+``` python
+import logging
+from utils.logging.tqdm import logging_init
+
+if __name__ == "__main__":
+    logging_init(
+        level=logging.INFO,
+        format_string="{name} - {levelname}: {message}",
+        style="%"
+    )
+```
+
 ## Usage Example
 
-### Example 1 - Get cloud-masked statistics for a geometry
+### Example 1 - Find all the scenes available for a geometry within a date range
+
+<h5 a><strong><code>pixels_utils_scene_search.py</code></strong></h5>
+
+``` python
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from pixels_utils.constants.titiler import ENDPOINT_STATISTICS
+from pixels_utils.mask import SCL
+
+
+from geo_utils.vector import geojson_geometry_to_shapely
+
+from pixels_utils.tests.data.load_data import sample_geojson
+from pixels_utils.scenes import get_stac_scenes
+
+DATA_ID = 1
+
+geojson = sample_geojson(DATA_ID)
+
+scenes = get_stac_scenes(
+    bounding_box=geojson_geometry_to_shapely(geojson).bounds,
+    date_start= "2019-01-01",
+    date_end= "2019-01-31",
+    max_scene_cloud_cover_percent = 80,
+)
+
+pprint(r.json()["properties"][ENDPOINT_STATISTICS])
+```
+
+<h5 a><code>[OUTPUT]</code></h5>
+
+| index | id                       | datetime             | eo:cloud_cover |
+| ----- | ------------------------ | -------------------- | -------------- |
+| 0     | S2B_10TGS_20190125_0_L2A | 2019-01-25T19:01:37Z |          45.17 |
+| 1     | S2A_10TGS_20190110_0_L2A | 2019-01-10T19:01:32Z |          56.59 |
+| 2     | S2A_11TLM_20190110_0_L2A | 2019-01-10T19:01:30Z |          24.87 |
+
+
+### Example 2 - Get cloud-masked statistics for a geometry
 
 <h5 a><strong><code>pixels_utils_statistics_geojson.py</code></strong></h5>
 

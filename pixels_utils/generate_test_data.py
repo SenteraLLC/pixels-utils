@@ -4,12 +4,8 @@ import pickle
 from os.path import abspath, join
 from pathlib import Path
 
-from pixels_utils.constants.sentinel2 import (
-    ASSETS_MSI,
-    EXPRESSION_NDVI,
-    SCL_GROUP_ARABLE,
-)
-from pixels_utils.endpoints.stac import statistics
+from pixels_utils.constants.sentinel2 import ASSETS_MSI, EXPRESSION_NDVI, SCL_GROUP_ARABLE
+from pixels_utils.stac.endpoint import statistics
 from pixels_utils.tests.data.load_data import sample_geojson, sample_scene_url
 
 
@@ -86,10 +82,8 @@ class GenerateTestData:
         ) in self._get_combinations():
             if mask_scl is None and whitelist is False:
                 continue  # because this same scenario is covered for whitelist = True
-            folder, name = self._get_names(
-                assets, expression, geojson, mask_scl, whitelist, nodata, gsd
-            )
-            logging.info(f"Generating sample data for {folder}/{name}")
+            folder, name = self._get_names(assets, expression, geojson, mask_scl, whitelist, nodata, gsd)
+            logging.debug("Generating sample data for %s/%s", folder, name)
             try:
                 r = statistics(
                     scene_url,
@@ -104,6 +98,6 @@ class GenerateTestData:
                 )
                 self._save_pickle(r, folder, name)
             except ValueError:
-                logging.info("Unable to generate sample data (invalid arguments).")
+                logging.exception("Unable to generate sample data (invalid arguments): ValueError")
             except NotImplementedError:
-                logging.info("Unable to generate sample data (NotImplementedError).")
+                logging.exception("Unable to generate sample data (NotImplementedError): NotImplementedError")

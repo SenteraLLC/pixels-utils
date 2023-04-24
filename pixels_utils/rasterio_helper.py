@@ -4,7 +4,6 @@ from os import remove as os_remove
 from os.path import dirname, split
 from pathlib import Path
 from typing import List
-from warnings import warn
 
 import numpy.typing as npt
 
@@ -17,7 +16,7 @@ try:
     from rasterio.io import DatasetReader
     from rasterio.profiles import Profile
 except ImportError:
-    warn(
+    logging.exception(
         "Optional dependency <rasterio> not imported. Some features are not available."
     )
 
@@ -144,7 +143,7 @@ def save_image(
         Path(dirname(fname_out)).mkdir(parents=True, exist_ok=True)
     except FileExistsError:  # get this every once in a while for .tif
         pass
-    logging.info('Saving "%s"', split(fname_out)[-1])
+    logging.debug('Saving "%s"', split(fname_out)[-1])
 
     profile = set_driver_tags(profile, driver, interleave)
     array, profile = ensure_data_profile_consistency(array, profile, driver)
@@ -159,7 +158,7 @@ def save_image(
         rast_out.update_tags(**profile)
     if driver == "ENVI":  # and now update header if ENVI format
         # write_envi(array, profile, fname_out)
-        logging.info("Not yet pulled from Insight db-geoml/utilities.py")
+        logging.warning("Not yet pulled from Insight db-geoml/utilities.py")
     if keep_xml is False:
         fname_xml = fname_out + ".aux.xml"
         with suppress(FileNotFoundError):
