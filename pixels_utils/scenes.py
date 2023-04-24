@@ -4,7 +4,9 @@ from typing import Dict, Iterator, Tuple, Union
 from geo_utils.validate import ensure_valid_geometry
 from pandas import DataFrame
 from retry import retry
-from satsearch import Search  # type: ignore
+
+# from satsearch import Search  # type: ignore
+from pystac_client import Client
 
 from pixels_utils.constants.sentinel2 import ELEMENT84_SEARCH_URL, SENTINEL_2_L2A_COLLECTION
 
@@ -45,27 +47,22 @@ def get_stac_scenes(
         DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each
         scene withing `bounding_box` and betweent the passed date parameters.
     """
-    dates = str(date_start) + "/" + str(date_end)
-    s = Search(
-        url=ELEMENT84_SEARCH_URL,
+    api = Client.open("https://earth-search.aws.element84.com/v0")
+
+    s = api.search(
+        max_items=None,
         collections=[SENTINEL_2_L2A_COLLECTION],
-        datetime=dates,
         bbox=bounding_box,
-        query={"eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}},  # TODO: Use kwargs to set query.
+        datetime=[date_start, date_end],
+        query={"eo:cloud_cover": {"lt": max_scene_cloud_cover_percent}},
     )
-    results_str = s.items().summary(
-        params=[
-            "id",
-            "datetime",
-            # "sentinel:product_id",
-            "eo:cloud_cover",
-        ]
-    )
-    summary = [line.split() for line in results_str.splitlines()]
-    cols = summary[1]
-    data = summary[2:]
-    return DataFrame(data=data, columns=cols).sort_values(by="datetime", ascending=True, ignore_index=True)
-    # return list(result), list(result.properties("datetime")), list(result.properties("eo:cloud_cover"))
+
+    ic = s.item_collection_as_dict()["features"]
+    df = DataFrame(ic)
+    df["datetime"] = df["properties"].map(lambda dct: dct["datetime"])
+    df["eo:cloud_cover"] = df["properties"].map(lambda dct: dct["eo:cloud_cover"])
+    df = df[["id", "datetime", "eo:cloud_cover"]].sort_values(by="datetime", ascending=True, ignore_index=True)
+    return df
 
 
 def _walk_geom_coords(coordinates, get_fn) -> Iterator[float]:

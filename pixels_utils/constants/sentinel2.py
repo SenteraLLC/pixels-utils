@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-ELEMENT84_SEARCH_URL = "https://earth-search.aws.element84.com/v0/search"
+ELEMENT84_SEARCH_URL = "https://earth-search.aws.element84.com/v0"
 ELEMENT84_L2A_SCENE_URL = "https://earth-search.aws.element84.com/v0/" "collections/{collection}/items/{sceneid}"
 
 SENTINEL_2_L2A_COLLECTION = "sentinel-s2-l2a-cogs"
