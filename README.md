@@ -105,7 +105,7 @@ pprint(r.json()["properties"][ENDPOINT_STATISTICS])
 ``` python
 from pixels_utils.endpoints.stac import statistics
 from pixels_utils.constants.sentinel2 import (
-    ELEMENT84_L2A_SCENE_URL,
+    ELEMENT84_L2A_SCENE_URL_V0,
     SENTINEL_2_L2A_COLLECTION,
     EXPRESSION_NDVI,
 )
@@ -114,7 +114,7 @@ from pixels_utils.mask import SCL
 from pixels_utils.tests.data import sceneid, sample_geojson
 from pixels_utils.utilities import _check_assets_expression
 
-scene_url = ELEMENT84_L2A_SCENE_URL.format(
+scene_url = ELEMENT84_L2A_SCENE_URL_V0.format(
     collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid
 )
 assets=None
