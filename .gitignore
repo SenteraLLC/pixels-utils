@@ -3,3 +3,15 @@ __pycache__/
 *.pyc
 *.egg*
 _build/
+pixels_utils/constants/
+pixels_utils/endpoints/
+pixels_utils/stac/
+pixels_utils/tests/
+pixels_utils/utilities.py
+pixels_utils/utils_crop.py
+pixels_utils/utils_statistics.py
+pixels_utils/generate_test_data.py
+pixels_utils/mask.py
+pixels_utils/scenes.py
+pixels_utils/rasterio_helper.py
+pixels_utils/README.md
