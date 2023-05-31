@@ -10,3 +10,7 @@ pixels-utils/tests/
 pixels-utils/utilities.py
 pixels-utils/utils_crop.py
 pixels-utils/utils_statistics.py
+pixels_utils/generate_test_data.py
+pixels_utils/mask.py
+pixels_utils/rasterio_helper.py
+pixels_utils/README.md
