@@ -1041,7 +1041,7 @@ tqdm = ["tqdm"]
 
 [[package]]
 name = "geo-utils"
-version = "1.3.9"
+version = "1.3.10"
 description = "Python modules for performing GIS-related functionality."
 category = "main"
 optional = false
@@ -1066,8 +1066,8 @@ urllib3 = "^1.26.15"
 [package.source]
 type = "git"
 url = "git@github.com:SenteraLLC/py-geo-utils.git"
-reference = "main"
-resolved_reference = "733258e8f59e2e434d066cba0a97876ac3e61830"
+reference = "DEM-136-search"
+resolved_reference = "5963e86f6e3ee603c464a0d83cedf432bf41f216"
 
 [[package]]
 name = "geographiclib"
@@ -4342,4 +4342,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "52b006b517bbd00ca9b69ed916844766a19ac45eaf6996f5379bdcf7b372b72a"
+content-hash = "4fc45b4f35cb7d41378c0e560452a362edf5d4743a3abff78d7033fa50f56673"
