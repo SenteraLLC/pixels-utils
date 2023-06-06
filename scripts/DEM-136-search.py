@@ -5,7 +5,7 @@ from pathlib import Path
 from dateutil.relativedelta import relativedelta
 from shapely.geometry import Point, Polygon
 
-from pixels_utils.scenes._scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
+from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
 from pixels_utils.tests.data.load_data import sample_geojson
 
 # %% Geojson vs Dict vs Shapely

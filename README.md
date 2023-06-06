@@ -64,38 +64,36 @@ if __name__ == "__main__":
 <h5 a><strong><code>pixels_utils_scene_search.py</code></strong></h5>
 
 ``` python
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from pprint import pprint
+
 from pixels_utils.constants.titiler import ENDPOINT_STATISTICS
-from pixels_utils.mask import SCL
-
-
-from geo_utils.vector import geojson_geometry_to_shapely
 
 from pixels_utils.tests.data.load_data import sample_geojson
-from pixels_utils.scenes import get_stac_scenes
+from pixels_utils.scenes import search_stac_scenes
+from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
+
 
 DATA_ID = 1
 
-geojson = sample_geojson(DATA_ID)
-
-scenes = get_stac_scenes(
-    bounding_box=geojson_geometry_to_shapely(geojson).bounds,
-    date_start= "2019-01-01",
-    date_end= "2019-01-31",
-    max_scene_cloud_cover_percent = 80,
+df_scenes = search_stac_scenes(
+    geometry=sample_geojson(DATA_ID),
+    date_start="2019-01-01",
+    date_end="2019-01-31",
+    intersects=None,
+    stac_catalog_url=EARTHSEARCH_URL,
+    collection=EarthSearchCollections.sentinel_2_l2a,
+    query={"eo:cloud_cover": {"lt": 80}},  # keeps less than 80% cloud cover
 )
 
-pprint(r.json()["properties"][ENDPOINT_STATISTICS])
+print(df_scenes[["id", "datetime", "eo:cloud_cover"]].to_markdown(tablefmt="pipe"))
 ```
 
 <h5 a><code>[OUTPUT]</code></h5>
-
-| index | id                       | datetime             | eo:cloud_cover |
-| ----- | ------------------------ | -------------------- | -------------- |
-| 0     | S2B_10TGS_20190125_0_L2A | 2019-01-25T19:01:37Z |          45.17 |
-| 1     | S2A_10TGS_20190110_0_L2A | 2019-01-10T19:01:32Z |          56.59 |
-| 2     | S2A_11TLM_20190110_0_L2A | 2019-01-10T19:01:30Z |          24.87 |
+|    | id                       | datetime                    |   eo:cloud_cover |
+|---:|:-------------------------|:----------------------------|-----------------:|
+|  0 | S2A_11TLM_20190110_0_L2A | 2019-01-10T19:01:30.135000Z |          26.9409 |
+|  1 | S2A_10TGS_20190110_0_L2A | 2019-01-10T19:01:32.811000Z |          61.8212 |
+|  2 | S2B_10TGS_20190125_0_L2A | 2019-01-25T19:01:37.534000Z |          55.6444 |
 
 
 ### Example 2 - Get cloud-masked statistics for a geometry

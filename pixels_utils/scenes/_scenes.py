@@ -45,7 +45,7 @@ def search_stac_scenes(
     geometry: Any,
     date_start: Union[date, str],
     date_end: Union[date, str],
-    intersects: None,
+    intersects: Any = None,
     stac_catalog_url: str = EARTHSEARCH_URL,
     collection: Union[str, EarthSearchCollections] = EarthSearchCollections.sentinel_2_l2a,
     query: Dict[str, Any] = {"eo:cloud_cover": {"lt": 80}},
