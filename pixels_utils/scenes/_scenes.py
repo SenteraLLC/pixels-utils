@@ -110,6 +110,16 @@ def get_stac_scenes(
 
 
 def parse_nested_stac_data(df: DataFrame, column: str) -> DataFrame:
+    """
+    Parses nested STAC data from a DataFrame column into a new DataFrame.
+
+    Args:
+        df (DataFrame): DataFrame containing nested STAC data.
+        column (str): Name of column containing nested STAC data.
+
+    Returns:
+        DataFrame: DataFrame with nested STAC data parsed into new columns.
+    """
     assert column in df.columns, f"Column '{column}' not found in DataFrame"
     assert isinstance(df[column].iloc[0], dict), f"Column '{column}' must be a dict to parse nested data."
     return df[column].apply(lambda properties: Series(properties))
@@ -118,6 +128,15 @@ def parse_nested_stac_data(df: DataFrame, column: str) -> DataFrame:
 @memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 def request_asset_info(df: DataFrame) -> DataFrame:
+    """
+    Retrieves asset info for each scene in a DataFrame.
+
+    Args:
+        df (DataFrame): DataFrame containing STAC data.
+
+    Returns:
+        DataFrame: DataFrame with asset info for each scene.
+    """
     assert "assets" in df.columns, "Column 'assets' not found in DataFrame; cannot retrieve asset info."
     assert (
         "stac_version" in df.columns
