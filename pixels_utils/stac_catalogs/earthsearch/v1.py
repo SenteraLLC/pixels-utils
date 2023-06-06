@@ -1,14 +1,9 @@
 from enum import Enum, auto
 
-ELEMENT84_SEARCH_URL = "https://earth-search.aws.element84.com/v1"
+from pixels_utils.stac_catalogs.earthsearch import AutoDashNameEnum
 
-ELEMENT84_SCENE_COLLECTION_URL = "https://earth-search.aws.element84.com/v1/" "collections/{collection}/items/{sceneid}"
-
-
-class AutoDashNameEnum(Enum):
-    def __init__(self, value):
-        self._name_ = self._name_.replace("_", "-")
-        self._value_ = value
+EARTHSEARCH_URL = "https://earth-search.aws.element84.com/v1"
+EARTHSEARCH_SCENE_URL = "{EARTHSEARCH_URL}" "collections/{collection}/items/{sceneid}"
 
 
 class EarthSearchCollections(AutoDashNameEnum):
