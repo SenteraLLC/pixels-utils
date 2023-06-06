@@ -7,36 +7,11 @@ from pystac_client import Client
 from requests import get
 from retry import retry
 
-from pixels_utils.scenes._utils import bounds_from_geojson_or_geometry
+from pixels_utils.scenes._utils import _bounds_from_geojson_or_geometry, _validate_collections
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
 memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done manually)
-
-
-def _earthsearch_version_from_stac_version(stac_catalog_url: str = EARTHSEARCH_URL):
-    stac_version = stac_catalog_url.split("/")[-1]
-    if stac_version == "v0":
-        from pixels_utils.stac_catalogs.earthsearch.v0 import EarthSearchCollections
-
-        return EarthSearchCollections
-    elif stac_version == "v1":
-        from pixels_utils.stac_catalogs.earthsearch.v1 import EarthSearchCollections
-
-        return EarthSearchCollections
-    else:
-        raise ValueError(f"STAC version '{stac_version}' not supported by pixels-utils.")
-
-
-def _validate_collections(collection: Union[str, EarthSearchCollections], stac_catalog_url: str = EARTHSEARCH_URL):
-    # TODO: Make more robust if needing to support more STAC catalogs
-    earthsearch_collections = _earthsearch_version_from_stac_version(stac_catalog_url)
-
-    collection = collection.name if isinstance(collection, earthsearch_collections) else collection
-    assert collection in [
-        c.name for c in earthsearch_collections
-    ], f"Collection '{collection}' not supported by pixels-utils."
-    return collection
 
 
 @memory.cache
@@ -71,7 +46,8 @@ def search_stac_scenes(
         collection: Union[str, EarthSearchCollections], optional): STAC collection to search. Defaults to
         EarthSearchCollections.sentinel_2_l2a ("sentinel-2-l2a").
 
-        query (Dict[str, Any], optional): Additional query parameters to pass to the STAC search API. Defaults to `{"eo:cloud_cover": {"lt": 80}}`, which filters out scenes with cloud cover greater than 80%.
+        query (Dict[str, Any], optional): Additional query parameters to pass to the STAC search API. Defaults to
+        `{"eo:cloud_cover": {"lt": 80}}`, which filters out scenes with cloud cover greater than 80%.
 
     Returns:
         DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each scene within `bounding_box` and
@@ -92,7 +68,7 @@ def search_stac_scenes(
         # limit=limit,
         # ids=None,
         collections=[collection],
-        bbox=bounds_from_geojson_or_geometry(geometry),
+        bbox=_bounds_from_geojson_or_geometry(geometry),
         # intersects=None,
         datetime=[date_start, date_end],
         # filter=None,
