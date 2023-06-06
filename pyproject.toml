@@ -28,8 +28,9 @@ black = {version = "^22.6", allow-prereleases = true}
 ipywidgets = "^7.7"
 ipyfilechooser = "^0.6.0"
 ipykernel = "^6.21.2"
-pyppeteer = "^1.0.2"
 jupyterlab = "^3.6.1"
+pyppeteer = "^1.0.2"
+tabulate = "^0.9.0"
 
 [tool.poetry.scripts]
 pixels_utils = "pixels_utils.cli:cli"
