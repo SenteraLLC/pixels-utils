@@ -6,7 +6,26 @@ from dateutil.relativedelta import relativedelta
 from shapely.geometry import Point, Polygon
 
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
-from pixels_utils.tests.data.load_data import sample_geojson
+from pixels_utils.tests.data.load_data import sample_featurecollection, sample_geojson, sample_geometry
+from pixels_utils.scenes._utils import _bounds_from_geojson_or_geometry
+from geo_utils.vector import geojson_to_shapely
+
+# %% Testing out geometry input types
+feature_collection = sample_featurecollection()
+_bounds_from_geojson_or_geometry(feature_collection)
+
+feature = feature_collection['features'][0]
+_bounds_from_geojson_or_geometry(feature)
+
+geometry = sample_geometry()
+_bounds_from_geojson_or_geometry(geometry)
+
+geojson = sample_geojson()
+_bounds_from_geojson_or_geometry(geojson)
+
+shapely = geojson_to_shapely(geometry)
+_bounds_from_geojson_or_geometry(shapely)
+
 
 # %% Geojson vs Dict vs Shapely
 
@@ -48,3 +67,5 @@ df_scenes = search_stac_scenes(
 df_properties = parse_nested_stac_data(df=df_scenes, column="properties")
 df_assets = parse_nested_stac_data(df=df_scenes, column="assets")
 df_asset_info = request_asset_info(df=df_scenes)
+
+# %%
