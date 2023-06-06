@@ -41,7 +41,7 @@ def _validate_collections(collection: Union[str, EarthSearchCollections], stac_c
 
 @memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
-def get_stac_scenes(
+def search_stac_scenes(
     geometry: Any,
     date_start: Union[date, str],
     date_end: Union[date, str],

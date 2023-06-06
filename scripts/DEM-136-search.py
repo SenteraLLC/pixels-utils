@@ -5,7 +5,7 @@ from pathlib import Path
 from dateutil.relativedelta import relativedelta
 from shapely.geometry import Point, Polygon
 
-from pixels_utils.scenes._scenes import get_stac_scenes, parse_nested_stac_data, request_asset_info
+from pixels_utils.scenes._scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
 from pixels_utils.tests.data.load_data import sample_geojson
 
 # %% Geojson vs Dict vs Shapely
@@ -35,7 +35,7 @@ elif STAC_VERSION == "v1":
     collection = EarthSearchCollections.sentinel_2_l2a
 # %% Run
 
-df_scenes_v0 = get_stac_scenes(
+df_scenes_v0 = search_stac_scenes(
     # geometry=Polygon((Point(6, 59), Point(-5, -2), Point(88, -46), Point(6, 59))),
     geometry=geojson,
     date_start=date_start,
