@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.egg*
 _build/
+pixels_utils/constants/
 pixels_utils/endpoints/
 pixels_utils/stac/
 pixels_utils/tests/test_endpoint_stac/
