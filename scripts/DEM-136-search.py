@@ -1,29 +1,34 @@
 # %% Imports
 from datetime import datetime
+from json import load
 from pathlib import Path
 
 from dateutil.relativedelta import relativedelta
+from geo_utils.vector import geojson_to_shapely
 from shapely.geometry import Point, Polygon
 
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
-from pixels_utils.tests.data.load_data import sample_featurecollection, sample_geojson, sample_geometry
 from pixels_utils.scenes._utils import _bounds_from_geojson_or_geometry
-from geo_utils.vector import geojson_to_shapely
+from pixels_utils.tests.data.load_data import sample_feature, sample_feature_collection, sample_geojson_multipolygon
 
 # %% Testing out geometry input types
-feature_collection = sample_featurecollection()
-_bounds_from_geojson_or_geometry(feature_collection)
-
-feature = feature_collection['features'][0]
+feature = sample_feature()
 _bounds_from_geojson_or_geometry(feature)
 
-geometry = sample_geometry()
-_bounds_from_geojson_or_geometry(geometry)
+feature_collection = sample_feature_collection()
+_bounds_from_geojson_or_geometry(feature_collection)  # Raises TypeError
 
-geojson = sample_geojson()
-_bounds_from_geojson_or_geometry(geojson)
+feature2 = feature_collection["features"][0]
+_bounds_from_geojson_or_geometry(feature2)
 
-shapely = geojson_to_shapely(geometry)
+# dict-type geojson
+feature_dict = load(open("/home/tyler/git/pixels-utils/pixels_utils/tests/data/aoi_1.geojson"))
+_bounds_from_geojson_or_geometry(feature_dict)
+
+geojson_multipolygon = sample_geojson_multipolygon()
+_bounds_from_geojson_or_geometry(geojson_multipolygon)
+
+shapely = geojson_to_shapely(geojson_multipolygon)
 _bounds_from_geojson_or_geometry(shapely)
 
 
@@ -36,8 +41,7 @@ DATA_ID = 1
 OUTPUT_DIR = Path("/mnt/c/Users/Tyler/Downloads")
 STAC_VERSION = "v1"  # "v0" or "v1"
 
-geojson = sample_geojson(DATA_ID)
-# geojson_fc = ensure_valid_featurecollection(geojson, create_new=True)
+geojson = sample_feature(DATA_ID)
 date_start = "2022-02-01"  # planting date
 date_end = "2022-04-01"
 date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
@@ -69,3 +73,4 @@ df_assets = parse_nested_stac_data(df=df_scenes, column="assets")
 df_asset_info = request_asset_info(df=df_scenes)
 
 # %%
+_bounds_from_geojson_or_geometry(geojson)

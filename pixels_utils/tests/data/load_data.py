@@ -3,7 +3,7 @@ from os import chdir
 from os.path import abspath
 from pathlib import Path
 
-from geo_utils.validate import ensure_valid_featurecollection, ensure_valid_geometry
+from geo_utils.vector import validate_geojson, validate_geojson_geometry
 
 from pixels_utils.stac_catalogs.earthsearch.v0 import EARTHSEARCH_SCENE_URL, EARTHSEARCH_URL, EarthSearchCollections
 
@@ -24,22 +24,22 @@ def sample_scene_url(data_id=1):
     return EARTHSEARCH_SCENE_URL.format(collection=EARTHSEARCH_URL, sceneid=sample_sceneid(data_id=1))
 
 
-def sample_featurecollection(data_id=1):
+def sample_feature(data_id=1):
     name = f"aoi_{data_id}"
     with open(f"{name}.geojson") as f:
-        geojson = ensure_valid_featurecollection(load(f), create_new=True)
+        geojson = validate_geojson(load(f))
     return geojson
 
 
-def sample_geojson(data_id=1):
-    name = f"aoi_{data_id}"
+def sample_feature_collection(data_id=1):
+    name = f"aoi_{data_id}-feature-collection"
     with open(f"{name}.geojson") as f:
-        geojson = load(f)
+        geojson = validate_geojson(load(f))
     return geojson
 
 
-def sample_geometry(data_id=1):
+def sample_geojson_multipolygon(data_id=1):
     name = f"aoi_{data_id}"
     with open(f"{name}.geojson") as f:
-        geometry = ensure_valid_geometry(load(f))
+        geometry = validate_geojson_geometry(load(f)["geometry"])
     return geometry
