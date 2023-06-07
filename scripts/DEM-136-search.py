@@ -1,9 +1,9 @@
 # %% Imports
-from datetime import datetime
+from datetime import datetime  # noqa
 from json import load
 from pathlib import Path
 
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta  # noqa
 from geo_utils.vector import geojson_to_shapely
 from shapely.geometry import Point, Polygon
 
@@ -39,19 +39,19 @@ geometry = Polygon((Point(6, 59), Point(-5, -2), Point(88, -46), Point(6, 59)))
 # %% Settings
 DATA_ID = 1
 OUTPUT_DIR = Path("/mnt/c/Users/Tyler/Downloads")
-STAC_VERSION = "v1"  # "v0" or "v1"
+EARTHSEARCH_VER = "v1"  # "v0" or "v1"
 
 geojson = sample_feature(DATA_ID)
-date_start = "2022-02-01"  # planting date
-date_end = "2022-04-01"
-date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
+date_start = "2022-06-01"  # planting date
+date_end = "2022-06-30"
+# date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
 
-if STAC_VERSION == "v0":
+if EARTHSEARCH_VER == "v0":
     from pixels_utils.stac_catalogs.earthsearch.v0 import EARTHSEARCH_URL, EarthSearchCollections
 
     stac_catalog_url = EARTHSEARCH_URL
     collection = EarthSearchCollections.sentinel_s2_l2a_cogs
-elif STAC_VERSION == "v1":
+elif EARTHSEARCH_VER == "v1":
     from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
     stac_catalog_url = EARTHSEARCH_URL
@@ -65,12 +65,9 @@ df_scenes = search_stac_scenes(
     intersects=None,
     stac_catalog_url=stac_catalog_url,
     collection=collection,
-    query={"eo:cloud_cover": {"lt": 1}},
+    query={"eo:cloud_cover": {"lt": 80}},
 )
 
 df_properties = parse_nested_stac_data(df=df_scenes, column="properties")
 df_assets = parse_nested_stac_data(df=df_scenes, column="assets")
 df_asset_info = request_asset_info(df=df_scenes)
-
-# %%
-_bounds_from_geojson_or_geometry(geojson)
