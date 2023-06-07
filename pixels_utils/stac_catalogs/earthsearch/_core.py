@@ -9,4 +9,5 @@ class AutoDashNameEnum(Enum):
         self._value_ = value
 
 
+# The EARTHSEARCH_ASSET_INFO_KEY dict maps the STAC version to the asset metadata/info key found in the collection
 EARTHSEARCH_ASSET_INFO_KEY = {"1.0.0-beta.2": "info", "1.0.0": "tileinfo_metadata"}
