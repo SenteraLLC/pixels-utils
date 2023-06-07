@@ -1066,8 +1066,8 @@ urllib3 = "^1.26.15"
 [package.source]
 type = "git"
 url = "git@github.com:SenteraLLC/py-geo-utils.git"
-reference = "DEM-136-search"
-resolved_reference = "ca3590ce5481d4013c68b7ab7f0fb79d3551d6ee"
+reference = "main"
+resolved_reference = "76b30ba59f79bd18245f4d627a42ec8c92f8f5b8"
 
 [[package]]
 name = "geographiclib"
@@ -4358,4 +4358,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "82a271051355ca3e1113b1fe61f0cfdf787a8714201f3dae11bc77d2d6f0fd79"
+content-hash = "69d467300a6b33831a4612fbafbcb5ea40c1407786ae059052e99818286bec92"
