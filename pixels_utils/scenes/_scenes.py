@@ -8,6 +8,7 @@ from requests import get
 from retry import retry
 
 from pixels_utils.scenes._utils import _bounds_from_geojson_or_geometry, _validate_collections
+from pixels_utils.stac_catalogs.earthsearch import EARTHSEARCH_ASSET_INFO_KEY
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
@@ -126,5 +127,6 @@ def request_asset_info(df: DataFrame) -> DataFrame:
         return df["stac_version"].iloc[0]
 
     stac_version = _get_stac_version(df)
-    asset_info_str = "info" if stac_version == "1.0.0-beta.2" else "tileinfo_metadata"
-    return df["assets"].apply(lambda assets: _request_asset_info(assets[asset_info_str]["href"]))
+    return df["assets"].apply(
+        lambda assets: _request_asset_info(assets[EARTHSEARCH_ASSET_INFO_KEY[stac_version]]["href"])
+    )
