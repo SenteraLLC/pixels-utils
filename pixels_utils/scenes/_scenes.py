@@ -1,13 +1,14 @@
 from datetime import date
 from typing import Any, Dict, Union
 
+from geo_utils.vector import geojson_to_shapely, shapely_to_geojson_geometry
 from joblib import Memory  # type: ignore
 from pandas import DataFrame, Series
 from pystac_client import Client
 from requests import get
 from retry import retry
 
-from pixels_utils.scenes._utils import _bounds_from_geojson_or_geometry, _validate_collections
+from pixels_utils.scenes._utils import _validate_collections, _validate_geometry
 from pixels_utils.stac_catalogs.earthsearch import EARTHSEARCH_ASSET_INFO_KEY
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
@@ -25,6 +26,7 @@ def search_stac_scenes(
     stac_catalog_url: str = EARTHSEARCH_URL,
     collection: Union[str, EarthSearchCollections] = EarthSearchCollections.sentinel_2_l2a,
     query: Dict[str, Any] = {"eo:cloud_cover": {"lt": 80}},
+    simplify_to_bbox: bool = False,
 ) -> DataFrame:
     """
     Retrieves `scene_id`, `datetime`, and cloud cover for all available image tiles between `date_start` and `date_end`.
@@ -50,15 +52,22 @@ def search_stac_scenes(
         query (Dict[str, Any], optional): Additional query parameters to pass to the STAC search API. Defaults to
         `{"eo:cloud_cover": {"lt": 80}}`, which filters out scenes with cloud cover greater than 80%.
 
+        simplify_to_bbox (bool, optional): Whether geometry should be simplified to the bounding box (True) or not; if
+        True, uses `bbox` argument of `api.search()`; if False, uses `intersects` argument of `api.search(). Defaults to
+        False.
+
     Returns:
-        DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each scene within `bounding_box` and
-        between the passed date parameters.
+        DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each scene that intersects `geometry`
+        and date parameters.
     """
     # TODO: Support "intersects"
     assert intersects is None, "Intersects not yet supported by pixels-utils."
     date_start = date_start.strftime("%Y-%m-%d") if isinstance(date_start, date) else date_start
     date_end = date_end.strftime("%Y-%m-%d") if isinstance(date_end, date) else date_end
+    _validate_geometry(geometry)
     collection = _validate_collections(collection, stac_catalog_url)
+    bbox = geojson_to_shapely(geometry).bounds if simplify_to_bbox is True else None
+    intersects = shapely_to_geojson_geometry(geojson_to_shapely(geometry)) if simplify_to_bbox is False else None
 
     api = Client.open(url=stac_catalog_url)
 
@@ -69,8 +78,8 @@ def search_stac_scenes(
         # limit=limit,
         # ids=None,
         collections=[collection],
-        bbox=_bounds_from_geojson_or_geometry(geometry),
-        # intersects=None,
+        bbox=bbox,
+        intersects=intersects,
         datetime=[date_start, date_end],
         # filter=None,
         # filter_lang=None,
