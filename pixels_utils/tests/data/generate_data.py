@@ -6,7 +6,11 @@ from pickle import HIGHEST_PROTOCOL
 from pickle import dump as pickle_dump
 
 from pixels_utils.scenes import request_asset_info, search_stac_scenes
-from pixels_utils.tests.data.load_data import sample_feature, sample_feature_collection, sample_geojson_multipolygon
+from pixels_utils.tests.data.load_data import (  # noqa
+    sample_feature,
+    sample_feature_collection,
+    sample_geojson_multipolygon,
+)
 
 # %% Settings
 DATA_ID = 1
@@ -66,3 +70,5 @@ with open(
     "wb",
 ) as handle:
     pickle_dump(df_asset_info, handle, protocol=HIGHEST_PROTOCOL)
+
+# %%
