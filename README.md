@@ -75,10 +75,10 @@ df_scenes = search_stac_scenes(
     geometry=sample_geojson(DATA_ID),
     date_start="2019-01-01",
     date_end="2019-01-31",
-    intersects=None,
     stac_catalog_url=EARTHSEARCH_URL,
     collection=EarthSearchCollections.sentinel_2_l2a,
-    query={"eo:cloud_cover": {"lt": 80}},  # keeps less than 80% cloud cover
+    query={"eo:cloud_cover": {"lt": 80}},  # keeps less than 80% cloud cover,
+    simplify_to_bbox=True,
 )
 
 print(df_scenes[["id", "datetime", "eo:cloud_cover"]].to_markdown(tablefmt="pipe"))
