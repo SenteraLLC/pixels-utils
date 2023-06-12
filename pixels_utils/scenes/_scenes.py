@@ -53,8 +53,8 @@ def search_stac_scenes(
         `{"eo:cloud_cover": {"lt": 80}}`, which filters out scenes with cloud cover greater than 80%.
 
         simplify_to_bbox (bool, optional): Whether geometry should be simplified to the bounding box (True) or not; if
-        True, uses `bbox` argument of `api.search()`; if False, uses `intersects` argument of `api.search(). Defaults to
-        False.
+        True, uses `bbox` argument of `api.search()`; if False, uses `intersects` argument of `api.search()`. Defaults
+        to False.
 
     Returns:
         DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each scene that intersects `geometry`
@@ -71,7 +71,7 @@ def search_stac_scenes(
 
     api = Client.open(url=stac_catalog_url)
 
-    # TODO: Consider adding additional parameters to this function to allow for more control over the search
+    # TODO: Consider adding additional parameters to this function to provide more control over the search
     s = api.search(
         method="POST",
         # max_items=None,

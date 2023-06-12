@@ -1,6 +1,6 @@
 from typing import Any, Dict, Tuple, Union
 
-from geo_utils.vector import geojson_to_shapely, validate_geojson
+from geo_utils.vector import validate_geojson
 from geo_utils.vector._geojson import VALID_GEOJSON_GEOM_TYPES
 from geo_utils.vector._shapely import VALID_SHAPELY_GEOM_TYPES
 from geojson.feature import Feature
