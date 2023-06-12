@@ -22,7 +22,6 @@ def search_stac_scenes(
     geometry: Any,
     date_start: Union[date, str],
     date_end: Union[date, str],
-    intersects: Any = None,
     stac_catalog_url: str = EARTHSEARCH_URL,
     collection: Union[str, EarthSearchCollections] = EarthSearchCollections.sentinel_2_l2a,
     query: Dict[str, Any] = {"eo:cloud_cover": {"lt": 80}},
@@ -40,8 +39,6 @@ def search_stac_scenes(
         single geometry to determine the bounding box.
         date_start (Union[date, str]): Earliest UTC date to seach for available images (inclusive).
         date_end (Union[date, str]): Latest UTC date to seach for available images (inclusive).
-        intersects: The optional intersects parameter filters the result Items in the same was as bbox, only with a
-        GeoJSON Geometry rather than a bbox. Not yet supported by pixels-utils.
 
         stac_catalog_url (str, optional): URL of the STAC catalog to search. Defaults to EARTHSEARCH_URL
         ("https://earth-search.aws.element84.com/v1").
@@ -60,8 +57,6 @@ def search_stac_scenes(
         DataFrame: DataFrame with `scene_id`, `datetime`, and `eo:cloud_cover` for each scene that intersects `geometry`
         and date parameters.
     """
-    # TODO: Support "intersects"
-    assert intersects is None, "Intersects not yet supported by pixels-utils."
     date_start = date_start.strftime("%Y-%m-%d") if isinstance(date_start, date) else date_start
     date_end = date_end.strftime("%Y-%m-%d") if isinstance(date_end, date) else date_end
     _validate_geometry(geometry)

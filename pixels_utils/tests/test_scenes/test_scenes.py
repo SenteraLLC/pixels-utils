@@ -23,10 +23,10 @@ class Test_Scenes:
                 geometry=self.GEOJSON,
                 date_start="2022-06-01",
                 date_end="2022-06-30",
-                intersects=None,
                 stac_catalog_url=EARTHSEARCH_URL,
                 collection=EarthSearchCollections,
                 query={"eo:cloud_cover": {"lt": 80}},
+                simplify_to_bbox=True,
             )
             df_scenes.should.be.a(DataFrame)
             list(df_scenes.columns).should.be.equal_to(
@@ -57,10 +57,10 @@ class Test_Scenes:
                 geometry=self.GEOJSON,
                 date_start="2022-06-01",
                 date_end="2022-06-30",
-                intersects=None,
                 stac_catalog_url=EARTHSEARCH_URL,
                 collection=EarthSearchCollections,
                 query={"eo:cloud_cover": {"lt": 80}},
+                simplify_to_bbox=True,
             )
             df_properties = parse_nested_stac_data(df=df_scenes, column="properties")
             len(df_scenes).should.equal(len(df_properties))
@@ -87,10 +87,10 @@ class Test_Scenes:
                 geometry=self.GEOJSON,
                 date_start="2022-06-01",
                 date_end="2022-06-30",
-                intersects=None,
                 stac_catalog_url=EARTHSEARCH_URL,
                 collection=EarthSearchCollections,
                 query={"eo:cloud_cover": {"lt": 80}},
+                simplify_to_bbox=True,
             )
             with mock.patch(
                 "pixels_utils.scenes.request_asset_info", return_value=r_mock_asset_info

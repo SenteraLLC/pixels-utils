@@ -33,10 +33,10 @@ df_scenes = search_stac_scenes(
     geometry=geojson,
     date_start=date_start,
     date_end=date_end,
-    intersects=None,
     stac_catalog_url=stac_catalog_url,
     collection=collection,
     query={"eo:cloud_cover": {"lt": 80}},
+    simplify_to_bbox=True,
 )
 df_asset_info = request_asset_info(df=df_scenes)
 
