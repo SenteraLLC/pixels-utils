@@ -25,17 +25,16 @@ class STACMetaData:
     """
     Dataclass for extracting the metadata properties of the collection's assets.
 
-    Example:
-        >>> from pixels_utils.stac_catalogs.earthsearch.v1 import EarthSearchCollections, EARTHSEARCH_COLLECTION_URL, STACMetaData
-        >>> collection_url = EARTHSEARCH_COLLECTION_URL.format(collection=EarthSearchCollections.sentinel_2_l2a.name)
-        >>> stac_metadata = STACMetaData(collection_url=collection_url, assets=("scl", "blue", "green", "red", "rededge1", "rededge2",))
-        >>> stac_metadata.asset_names
-        >>> stac_metadata.asset_titles
-        >>> stac_metadata.df_assets
-        >>> stac_metadata.parse_asset_bands(column_name="raster:bands", return_dataframe=True)
-        >>> stac_metadata.parse_asset_bands(column_name="raster:bands", return_dataframe=False)
-        >>> stac_metadata.parse_asset_bands(column_name="eo:bands", return_dataframe=True)
-        >>> stac_metadata.parse_asset_bands(column_name="eo:bands", return_dataframe=False)
+    Args:
+        collection_url (str): URL pointing to the STAC collection.
+        assets (Tuple, optional): The assets to filter metatdata on. If `None` is passed, retrieves metadata for all
+        assets. Defaults to None.
+
+        asset_item_key (str, optional): Asset item key to use at the asset item level of the STAC catalog. Defaults to
+        "item_assets".
+
+        asset_title_key (str, optional): Asset title key to use at the asset item level of the STAC catalog.  Defaults
+        to "title".
     """
 
     collection_url: str
@@ -69,6 +68,7 @@ class STACMetaData:
 
     @cached_property
     def asset_names(self) -> Tuple:
+        """Asset names, according to the STAC catalog."""
         names = (
             tuple([k for k in self.metadata_full[self.ASSET_ITEM_KEY].keys()])
             if self.assets is None
@@ -85,6 +85,7 @@ class STACMetaData:
 
     @cached_property
     def asset_titles(self) -> Tuple:
+        """Asset titles, according to the STAC catalog."""
         item_assets = _filter_item_assets(
             assets=self.assets, metadata_full=self.metadata_full, asset_item_key=self.ASSET_ITEM_KEY
         )
@@ -94,6 +95,7 @@ class STACMetaData:
 
     @cached_property
     def df_assets(self) -> DataFrame:
+        """DataFrame of asset metadata, according to the STAC catalog."""
         item_assets = _filter_item_assets(
             assets=self.assets, metadata_full=self.metadata_full, asset_item_key=self.ASSET_ITEM_KEY
         )
