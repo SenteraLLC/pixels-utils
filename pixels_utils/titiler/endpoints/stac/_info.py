@@ -13,7 +13,7 @@ from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
 
 STAC_info = NewType("STAC_info", Response)
-STAC_INFO_ENPOINT = f"{STAC_ENDPOINT}/info"
+STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 QUERY_ASSETS = "assets"
 QUERY_URL = "url"
 
@@ -75,7 +75,7 @@ class Info:
             QUERY_ASSETS: self.assets,
         }
         r = get(
-            STAC_INFO_ENPOINT,
+            STAC_INFO_ENDPOINT,
             params=query,
         )
         if r.status_code != 200:
