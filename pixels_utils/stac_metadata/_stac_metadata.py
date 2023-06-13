@@ -27,15 +27,13 @@ class STACMetaData:
 
     Example:
         >>> from pixels_utils.stac_catalogs.earthsearch.v1 import EarthSearchCollections, EARTHSEARCH_COLLECTION_URL, STACMetaData
-        >>> stac_metadata = STACMetaData(collection=EarthSearchCollections.sentinel_2_l2a, assets=("blue", "green", "red", "rededge1", "rededge2"))
-        >>> stac_metadata = STACMetaData(collection_url=EARTHSEARCH_COLLECTION_URL.format(collection=EarthSearchCollections.sentinel_2_l2a.name), assets=("scl", "blue", "green", "red", "rededge1", "rededge2",))
+        >>> collection_url = EARTHSEARCH_COLLECTION_URL.format(collection=EarthSearchCollections.sentinel_2_l2a.name)
+        >>> stac_metadata = STACMetaData(collection_url=collection_url, assets=("scl", "blue", "green", "red", "rededge1", "rededge2",))
         >>> stac_metadata.asset_names
         >>> stac_metadata.asset_titles
         >>> stac_metadata.df_assets
-        >>> [a.name for a in stac_metadata.AssetNames]
         >>> stac_metadata.parse_asset_bands(column_name="raster:bands", return_dataframe=True)
         >>> stac_metadata.parse_asset_bands(column_name="raster:bands", return_dataframe=False)
-        >>> stac_metadata.df_assets[stac_metadata.df_assets["name"] == "blue"]["raster:bands"]
         >>> stac_metadata.parse_asset_bands(column_name="eo:bands", return_dataframe=True)
         >>> stac_metadata.parse_asset_bands(column_name="eo:bands", return_dataframe=False)
     """
