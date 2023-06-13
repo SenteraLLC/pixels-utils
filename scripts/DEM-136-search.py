@@ -66,7 +66,6 @@ df_scenes = search_stac_scenes(
     geometry=geojson,  # Can be feature, feature_dict, geojson_multipolygon, shapely, etc. from above
     date_start=date_start,
     date_end=date_end,
-    intersects=None,
     stac_catalog_url=stac_catalog_url,
     collection=collection,
     query={"eo:cloud_cover": {"lt": 80}},
