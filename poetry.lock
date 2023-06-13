@@ -784,7 +784,7 @@ files = [
 name = "defusedxml"
 version = "0.7.1"
 description = "XML bomb protection for Python stdlib modules"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
@@ -890,14 +890,14 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 
 [[package]]
 name = "filelock"
-version = "3.12.1"
+version = "3.12.2"
 description = "A platform independent file lock."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "filelock-3.12.1-py3-none-any.whl", hash = "sha256:42f1e4ff2b497311213d61ad7aac5fed9050608e5309573f101eefa94143134a"},
-    {file = "filelock-3.12.1.tar.gz", hash = "sha256:82b1f7da46f0ae42abf1bc78e548667f484ac59d2bcec38c713cee7e2eb51e83"},
+    {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
+    {file = "filelock-3.12.2.tar.gz", hash = "sha256:002740518d8aa59a26b0c76e10fb8c6e15eae825d34b6fdf670333fd7b938d81"},
 ]
 
 [package.extras]
@@ -1222,6 +1222,21 @@ numpy = ["numpy"]
 test = ["flake8", "pylint", "pytest", "pytest-cov"]
 
 [[package]]
+name = "humanize"
+version = "4.6.0"
+description = "Python humanize utilities"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "humanize-4.6.0-py3-none-any.whl", hash = "sha256:401201aca462749773f02920139f302450cb548b70489b9b4b92be39fe3c3c50"},
+    {file = "humanize-4.6.0.tar.gz", hash = "sha256:5f1f22bc65911eb1a6ffe7659bd6598e33dcfeeb904eb16ee1e705a09bf75916"},
+]
+
+[package.extras]
+tests = ["freezegun", "pytest", "pytest-cov"]
+
+[[package]]
 name = "identify"
 version = "2.5.24"
 description = "File identification library for Python"
@@ -1393,14 +1408,14 @@ ipywidgets = "*"
 
 [[package]]
 name = "ipykernel"
-version = "6.23.1"
+version = "6.23.2"
 description = "IPython Kernel for Jupyter"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipykernel-6.23.1-py3-none-any.whl", hash = "sha256:77aeffab056c21d16f1edccdc9e5ccbf7d96eb401bd6703610a21be8b068aadc"},
-    {file = "ipykernel-6.23.1.tar.gz", hash = "sha256:1aba0ae8453e15e9bc6b24e497ef6840114afcdb832ae597f32137fa19d42a6f"},
+    {file = "ipykernel-6.23.2-py3-none-any.whl", hash = "sha256:7ccb6e2d32fd958c21453db494c914f3474908a2fdefd99ab548a5375b548d1f"},
+    {file = "ipykernel-6.23.2.tar.gz", hash = "sha256:fcfb67c5b504aa1bfcda1c5b3716636239e0f7b9290958f1c558c79b4c0e7ed5"},
 ]
 
 [package.dependencies]
@@ -1551,6 +1566,33 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "jira"
+version = "3.5.1"
+description = "Python library for interacting with JIRA via REST APIs."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "jira-3.5.1-py3-none-any.whl", hash = "sha256:c142a69ca54a3d52259576cda5853b2d526760ce02332a4a9cad57a3a16d0130"},
+    {file = "jira-3.5.1.tar.gz", hash = "sha256:eb7a6c924780b80155cb3b9792d33430f4607c378c667473d6ed48178acba9dd"},
+]
+
+[package.dependencies]
+defusedxml = "*"
+packaging = "*"
+requests = ">=2.10.0"
+requests-oauthlib = ">=1.1.0"
+requests-toolbelt = "*"
+typing-extensions = ">=3.7.4.2"
+
+[package.extras]
+async = ["requests-futures (>=0.9.7)"]
+cli = ["ipython (>=4.0.0)", "keyring"]
+docs = ["furo", "sphinx (>=5.0.0)", "sphinx-copybutton"]
+opt = ["PyJWT", "filemagic (>=1.6)", "requests-jwt", "requests-kerberos"]
+test = ["MarkupSafe (>=0.23)", "PyYAML (>=5.1)", "docutils (>=0.12)", "flaky", "oauthlib", "parameterized (>=0.8.1)", "pytest (>=6.0.0)", "pytest-cache", "pytest-cov", "pytest-instafail", "pytest-sugar", "pytest-timeout (>=1.3.1)", "pytest-xdist (>=2.2)", "requests-mock", "requires.io", "tenacity", "wheel (>=0.24.0)", "xmlrunner (>=1.7.7)", "yanc (>=0.3.3)"]
 
 [[package]]
 name = "joblib"
@@ -1847,14 +1889,14 @@ files = [
 
 [[package]]
 name = "jupyterlab-server"
-version = "2.22.1"
+version = "2.23.0"
 description = "A set of server components for JupyterLab and JupyterLab like applications."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "jupyterlab_server-2.22.1-py3-none-any.whl", hash = "sha256:1c8eb55c7cd70a50a51fef42a7b4e26ef2f7fc48728f0290604bd89b1dd156e6"},
-    {file = "jupyterlab_server-2.22.1.tar.gz", hash = "sha256:dfaaf898af84b9d01ae9583b813f378b96ee90c3a66f24c5186ea5d1bbdb2089"},
+    {file = "jupyterlab_server-2.23.0-py3-none-any.whl", hash = "sha256:a5ea2c839336a8ba7c38c8e7b2f24cedf919f0d439f4d2e606d9322013a95788"},
+    {file = "jupyterlab_server-2.23.0.tar.gz", hash = "sha256:83c01aa4ad9451cd61b383e634d939ff713850f4640c0056b2cdb2b6211a74c7"},
 ]
 
 [package.dependencies]
@@ -1867,7 +1909,7 @@ packaging = ">=21.3"
 requests = ">=2.28"
 
 [package.extras]
-docs = ["autodoc-traits", "docutils (<0.20)", "jinja2 (<3.2.0)", "mistune (<3)", "myst-parser", "pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinxcontrib-openapi"]
+docs = ["autodoc-traits", "jinja2 (<3.2.0)", "mistune (<4)", "myst-parser", "pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinxcontrib-openapi (>0.8)"]
 openapi = ["openapi-core (>=0.16.1,<0.17.0)", "ruamel-yaml"]
 test = ["hatch", "ipykernel", "jupyterlab-server[openapi]", "openapi-spec-validator (>=0.5.1,<0.6.0)", "pytest (>=7.0)", "pytest-console-scripts", "pytest-cov", "pytest-jupyter[server] (>=0.6.2)", "pytest-timeout", "requests-mock", "sphinxcontrib-spelling", "strict-rfc3339", "werkzeug"]
 
@@ -2297,19 +2339,19 @@ test = ["flaky", "ipykernel (>=6.19.3)", "ipython", "ipywidgets", "nbconvert (>=
 
 [[package]]
 name = "nbconvert"
-version = "7.4.0"
+version = "7.5.0"
 description = "Converting Jupyter Notebooks"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "nbconvert-7.4.0-py3-none-any.whl", hash = "sha256:af5064a9db524f9f12f4e8be7f0799524bd5b14c1adea37e34e83c95127cc818"},
-    {file = "nbconvert-7.4.0.tar.gz", hash = "sha256:51b6c77b507b177b73f6729dba15676e42c4e92bcb00edc8cc982ee72e7d89d7"},
+    {file = "nbconvert-7.5.0-py3-none-any.whl", hash = "sha256:852e44392d5650ef217a5ce3a8050747051d4e6ba75f0574cb5435049ee6c0d9"},
+    {file = "nbconvert-7.5.0.tar.gz", hash = "sha256:f78fd22fd2410b960d5d9bcecf3e1d6c7bdc5fec2c865964c84aa4e74e6e88da"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = "*"
-bleach = "*"
+bleach = "!=5.0.0"
 defusedxml = "*"
 jinja2 = ">=3.0"
 jupyter-core = ">=4.7"
@@ -2317,12 +2359,12 @@ jupyterlab-pygments = "*"
 markupsafe = ">=2.0"
 mistune = ">=2.0.3,<3"
 nbclient = ">=0.5.0"
-nbformat = ">=5.1"
+nbformat = ">=5.7"
 packaging = "*"
 pandocfilters = ">=1.4.1"
 pygments = ">=2.4.1"
 tinycss2 = "*"
-traitlets = ">=5.0"
+traitlets = ">=5.1"
 
 [package.extras]
 all = ["nbconvert[docs,qtpdf,serve,test,webpdf]"]
@@ -2547,6 +2589,23 @@ files = [
     {file = "numpy-1.24.3-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:35400e6a8d102fd07c71ed7dcadd9eb62ee9a6e84ec159bd48c28235bbb0f8e4"},
     {file = "numpy-1.24.3.tar.gz", hash = "sha256:ab344f1bf21f140adab8e47fdbc7c35a477dc01408791f8ba00d018dd0bc5155"},
 ]
+
+[[package]]
+name = "oauthlib"
+version = "3.2.2"
+description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
+    {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
+]
+
+[package.extras]
+rsa = ["cryptography (>=3.0.0)"]
+signals = ["blinker (>=1.4.0)"]
+signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "opencv-python"
@@ -2933,7 +2992,7 @@ wcwidth = "*"
 name = "psutil"
 version = "5.9.5"
 description = "Cross-platform lib for process and system monitoring in Python."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -3580,6 +3639,40 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "requests-oauthlib"
+version = "1.3.1"
+description = "OAuthlib authentication support for Requests."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-oauthlib-1.3.1.tar.gz", hash = "sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a"},
+    {file = "requests_oauthlib-1.3.1-py2.py3-none-any.whl", hash = "sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5"},
+]
+
+[package.dependencies]
+oauthlib = ">=3.0.0"
+requests = ">=2.0.0"
+
+[package.extras]
+rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
+
+[[package]]
+name = "requests-toolbelt"
+version = "1.0.0"
+description = "A utility belt for advanced users of python-requests"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6"},
+    {file = "requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"},
+]
+
+[package.dependencies]
+requests = ">=2.0.1,<3.0.0"
+
+[[package]]
 name = "retry"
 version = "0.9.2"
 description = "Easy to use retry decorator."
@@ -3594,6 +3687,21 @@ files = [
 [package.dependencies]
 decorator = ">=3.4.2"
 py = ">=1.4.26,<2.0.0"
+
+[[package]]
+name = "retrying"
+version = "1.3.4"
+description = "Retrying"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "retrying-1.3.4-py3-none-any.whl", hash = "sha256:8cc4d43cb8e1125e0ff3344e9de678fefd85db3b750b81b2240dc0183af37b35"},
+    {file = "retrying-1.3.4.tar.gz", hash = "sha256:345da8c5765bd982b1d1915deb9102fd3d1f7ad16bd84a9700b85f64d24e8f3e"},
+]
+
+[package.dependencies]
+six = ">=1.7.0"
 
 [[package]]
 name = "rfc3339-validator"
@@ -3951,7 +4059,7 @@ files = [
 name = "tqdm"
 version = "4.65.0"
 description = "Fast, Extensible Progress Meter"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3983,6 +4091,18 @@ files = [
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
+
+[[package]]
+name = "typing-extensions"
+version = "4.6.3"
+description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "typing_extensions-4.6.3-py3-none-any.whl", hash = "sha256:88a4153d8505aabbb4e13aacb7c486c2b4a33ca3b3f807914a9b4c844c471c26"},
+    {file = "typing_extensions-4.6.3.tar.gz", hash = "sha256:d91d5919357fe7f681a9f2b5b4cb2a5f1ef0a1e9f59c4d8ff0d3491e05c0ffd5"},
+]
 
 [[package]]
 name = "tzdata"
@@ -4029,6 +4149,32 @@ secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "p
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
+name = "utils"
+version = "3.3.3"
+description = "Python utilities"
+category = "main"
+optional = false
+python-versions = "^3.8"
+files = []
+develop = false
+
+[package.dependencies]
+humanize = "^4.6.0"
+jira = "^3.4.1"
+numpy = "*"
+psutil = "^5.9.4"
+requests = "*"
+retrying = "*"
+tqdm = "*"
+visvalingamwyatt = "0.1.2"
+
+[package.source]
+type = "git"
+url = "git@github.com:SenteraLLC/py-utils.git"
+reference = "master"
+resolved_reference = "279ff2cbe4aeba0f93c89d7c05da4351003f7e25"
+
+[[package]]
 name = "validators"
 version = "0.20.0"
 description = "Python Data Validation for Humans™."
@@ -4065,6 +4211,24 @@ platformdirs = ">=3.2,<4"
 [package.extras]
 docs = ["furo (>=2023.3.27)", "proselint (>=0.13)", "sphinx (>=6.1.3)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=22.12)"]
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.3.1)", "pytest-env (>=0.8.1)", "pytest-freezegun (>=0.4.2)", "pytest-mock (>=3.10)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=67.7.1)", "time-machine (>=2.9)"]
+
+[[package]]
+name = "visvalingamwyatt"
+version = "0.1.2"
+description = "Simplify geometries with the Visvalingam-Wyatt algorithm"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "visvalingamwyatt-0.1.2-py2.py3-none-any.whl", hash = "sha256:d6866ddec26dca4d7c9cc18687cdab10fbfe8bf004a9277a14951e8b294489bf"},
+    {file = "visvalingamwyatt-0.1.2.tar.gz", hash = "sha256:8e0098841854f96179b215c2cda5bfed47d02eedc0c9a7954309057507b39c2a"},
+]
+
+[package.dependencies]
+numpy = ">=1.8,<2"
+
+[package.extras]
+cli = ["Fiona (>=1.6.2,<2)"]
 
 [[package]]
 name = "wcwidth"
@@ -4390,4 +4554,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "69d467300a6b33831a4612fbafbcb5ea40c1407786ae059052e99818286bec92"
+content-hash = "904bea5292df37710ba1ce403211be0a7c90456160461fb77d8e7152fcba10d4"
