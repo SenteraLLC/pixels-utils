@@ -16,7 +16,7 @@ logging_init(
 )
 # %% Settings
 DATA_ID = 1
-EARTHSEARCH_VER = "v0"  # "v0" or "v1"
+EARTHSEARCH_VER = "v1"  # "v0" or "v1"
 
 geojson = sample_feature(DATA_ID)
 date_start = "2022-06-01"  # planting date
@@ -40,7 +40,8 @@ elif EARTHSEARCH_VER == "v1":
         EarthSearchCollections,
     )
 
-    collection = EarthSearchCollections.sentinel_2_l2a
+    # collection = EarthSearchCollections.sentinel_2_l2a
+    collection = EarthSearchCollections.landsat_c2_l2
 
 stac_catalog_url = EARTHSEARCH_URL
 stac_collection_url = EARTHSEARCH_COLLECTION_URL.format(collection=collection.name)
@@ -101,6 +102,16 @@ elif EARTHSEARCH_VER == "v1":
             "some_invalid_asset",
         ]
     )
+    # assets = tuple(
+    #     [
+    #         stac_metadata.AssetNames["blue"].name,
+    #         stac_metadata.AssetNames["green"].name,
+    #         stac_metadata.AssetNames["red"].name,
+    #         stac_metadata.AssetNames["nir08"].name,
+    #         stac_metadata.AssetNames["swir16"].name,
+    #         stac_metadata.AssetNames["swir22"].name,
+    #     ]
+    # )
 
 scene_info = Info(
     url=url,

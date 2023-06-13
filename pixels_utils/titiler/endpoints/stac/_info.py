@@ -74,10 +74,13 @@ class Info:
             QUERY_URL: self.url,
             QUERY_ASSETS: self.assets,
         }
-        return get(
+        r = get(
             STAC_INFO_ENPOINT,
             params=query,
         )
+        if r.status_code != 200:
+            logging.warning("Info GET request failed. Reason: %s", r.reason)
+        return r
 
     @cached_property
     def asset_metadata(self) -> DataFrame:
@@ -102,6 +105,9 @@ class Info:
         Return:
             DataFrame: Titiler STAC info response.
         """
+        assert (
+            self.response.status_code == 200
+        ), f"Cannot convert response.json() to pandas DataFrame. Reason: {self.response.reason}."
         info = self.response.json()
         info_list = [dict(info[k], **{"name": k}) for k in info]
         df = DataFrame.from_records(info_list)
