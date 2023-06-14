@@ -1,6 +1,8 @@
 from requests import get
+from retry import retry
 
 
+@retry((RuntimeError, KeyError), tries=3, delay=2)
 def online_status_titiler(titiler_endpoint: str):
     """
     Checks the online status of the Titiler endpoint.

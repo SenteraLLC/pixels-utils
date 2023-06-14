@@ -1,8 +1,10 @@
 from requests import get
+from retry import retry
 
 from pixels_utils.titiler._connect import online_status_titiler
 
 
+@retry((RuntimeError, KeyError), tries=3, delay=2)
 def online_status_stac(titiler_endpoint: str, stac_endpoint: str):
     """
     Checks the online status of both the Titiler and STAC endpoints.
