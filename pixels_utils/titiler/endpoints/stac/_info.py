@@ -43,7 +43,10 @@ def _is_asset_available(item_url: str, asset: str) -> bool:
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Info:
     """
-    Class to help faciilitate titiler "info" endpoint (https://developmentseed.org/titiler/endpoints/stac/#info).
+    Class to help faciilitate titiler STAC info endpoint.
+
+    For more information, refer to [Titiler](https://developmentseed.org/titiler/endpoints/stac/#info) and
+    [STAC](https://stacspec.org/en/about/stac-spec/).
 
     Example:
         https://myendpoint/stac/info?url=https://somewhere.com/item.json&assets=B01
