@@ -89,9 +89,13 @@ class STACMetaData:
         item_assets = _filter_item_assets(
             assets=self.assets, metadata_full=self.metadata_full, asset_item_key=self.ASSET_ITEM_KEY
         )
-        return tuple(
-            [item_assets[a][self.ASSET_TITLE_KEY] for a in item_assets if self.ASSET_TITLE_KEY in item_assets[a].keys()]
-        )
+        # Returning as dict, which does not allow duplicate keys (asset names), which is checked in asset_names()
+        return {
+            asset: (
+                item_assets[asset][self.ASSET_TITLE_KEY] if self.ASSET_TITLE_KEY in item_assets[asset].keys() else None
+            )
+            for asset in item_assets
+        }
 
     @cached_property
     def df_assets(self) -> DataFrame:
