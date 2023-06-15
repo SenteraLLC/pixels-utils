@@ -21,6 +21,24 @@ memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
 memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done manually)
 
 
+# TODO: Can we do a general check on the passed assets by looping through them for the collection?
+def _is_asset_available(item_url: str, asset: str) -> bool:
+    query = {
+        "url": item_url,
+        "assets": (asset,),
+    }
+    if (
+        get(
+            STAC_INFO_ENDPOINT,
+            params=query,
+        ).status_code
+        == 200
+    ):
+        return True
+    else:
+        return False
+
+
 @memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Info:
@@ -44,11 +62,11 @@ class Info:
         self.assets = assets
         self.titiler_endpoint = titiler_endpoint
         self.asset_metadata  # Runs cached_property on class declaration
-        self._validate_assets()
+        self._validate_assets(validate_individual_assets=True)
         self.response  # Should run after asset_metadata to validate assets
 
-    def _validate_assets(self):
-        if set(self.assets) != set(self.asset_metadata.asset_names):
+    def _validate_assets(self, validate_individual_assets=False):
+        if (self.assets is not None) and (set(self.assets) != set(self.asset_metadata.asset_names)):
             invalid_assets = list(set(self.assets) - set(self.asset_metadata.asset_names))
             logging.warning(
                 "Some assets passed to the Info endpoint are invalid. Invalid assets are being removed from the assets "
@@ -56,6 +74,19 @@ class Info:
                 invalid_assets,
             )
             self.assets = self.asset_metadata.asset_names
+        if self.assets is None:
+            logging.warning(
+                "`assets=None`; although Titiler defaults to all available assets, availability of assets within a "
+                "catalog are not guaranteed. It is recommended to explicitly pass assets of"
+            )
+
+        if validate_individual_assets:
+            item_url = self.url
+            item = item_url.split("/")[-1]
+            # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
+            for asset in self.assets:
+                if not _is_asset_available(item_url=item_url, asset=asset):
+                    logging.warning('Asset "%s" is not availale from "%s" item.', asset, item)
 
     @cached_property
     def response(
@@ -65,10 +96,12 @@ class Info:
         Return basic info on STAC item's COG.
 
         Returns:
-            STAC_info: _description_
+            STAC_info: Response from the titiler stac info endpoint.
         """
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.url)
-        self._validate_assets()  # Validate again in case anything changed since class declaration
+        self._validate_assets(
+            validate_individual_assets=False
+        )  # Validate again in case anything changed since class declaration
 
         query = {
             QUERY_URL: self.url,
@@ -80,7 +113,12 @@ class Info:
         )
         if r.status_code != 200:
             logging.warning("Info GET request failed. Reason: %s", r.reason)
-        return r
+        return STAC_info(r)
+
+    def _parse_collection_url(self, url: str) -> str:
+        assert "/collections/" in url, '"/collections/" must be part of the STAC url.'
+        earthsearch_url, collection_scene_url = url.split("/collections/")
+        return earthsearch_url + "/collections/" + collection_scene_url.split("/")[0]
 
     @cached_property
     def asset_metadata(self) -> DataFrame:
@@ -91,12 +129,7 @@ class Info:
             DataFrame: STAC asset metadata.
         """
 
-        def _parse_collection_url(url: str) -> str:
-            assert "/collections/" in url, '"/collections/" must be part of the STAC url.'
-            earthsearch_url, collection_scene_url = url.split("/collections/")
-            return earthsearch_url + "/collections/" + collection_scene_url.split("/")[0]
-
-        return STACMetaData(collection_url=_parse_collection_url(self.url), assets=self.assets)
+        return STACMetaData(collection_url=self._parse_collection_url(self.url), assets=self.assets)
 
     def to_dataframe(self) -> DataFrame:
         """
