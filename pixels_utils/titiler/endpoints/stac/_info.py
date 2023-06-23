@@ -83,7 +83,7 @@ class Info:
                 "catalog are not guaranteed. It is recommended to explicitly pass assets of"
             )
 
-        if validate_individual_assets:
+        if validate_individual_assets and self.assets:
             item_url = self.url
             item = item_url.split("/")[-1]
             # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
