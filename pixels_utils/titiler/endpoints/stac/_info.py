@@ -48,6 +48,9 @@ class Info:
     For more information, refer to [Titiler](https://developmentseed.org/titiler/endpoints/stac/#info) and
     [STAC](https://stacspec.org/en/about/stac-spec/).
 
+    See a list of available assets for the EarthSearch collections in this Confluence page:
+    https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
+
     Example:
         https://myendpoint/stac/info?url=https://somewhere.com/item.json&assets=B01
 
@@ -70,7 +73,7 @@ class Info:
 
     def _validate_assets(self, validate_individual_assets=False):
         # TODO: Consider maintaining a list of available assets for each collection, and checking against that list; see
-        # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability#v0-sentinel-s2-l2a
+        # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
         if (self.assets is not None) and (set(self.assets) != set(self.asset_metadata.asset_names)):
             invalid_assets = list(set(self.assets) - set(self.asset_metadata.asset_names))
             logging.warning(
@@ -84,7 +87,7 @@ class Info:
                 "`assets=None`; although Titiler defaults to all available assets, availability of assets within a "
                 "catalog are not guaranteed. It is recommended to explicitly pass desired assets. See availability of "
                 "assets for different Collections in this Confluence page: "
-                "https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability#v0-sentinel-s2-l2a."
+                "https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability."
             )
 
         if validate_individual_assets:
