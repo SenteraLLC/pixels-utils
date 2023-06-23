@@ -89,7 +89,7 @@ class Info:
             # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
             for asset in self.assets:
                 if not _is_asset_available(item_url=item_url, asset=asset):
-                    logging.warning('Asset "%s" is not availale from "%s" item.', asset, item)
+                    logging.warning('Asset "%s" is not available from "%s" item.', asset, item)
 
     @cached_property
     def response(
