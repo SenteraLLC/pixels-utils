@@ -61,14 +61,23 @@ class Info:
 
         titiler_endpoint (str): The `https://myendpoint` part of the example URL above. Defaults to
         `https://pixels.sentera.com/stac/info`.
+
+        validate_individual_assets (bool): Whether to validate each asset individually during __init__(). Defaults to
+        True.
     """
 
-    def __init__(self, url: str, assets: Tuple[str] = None, titiler_endpoint: str = TITILER_ENDPOINT):
+    def __init__(
+        self,
+        url: str,
+        assets: Tuple[str] = None,
+        titiler_endpoint: str = TITILER_ENDPOINT,
+        validate_individual_assets: bool = True,
+    ):
         self.url = url
         self.assets = assets
         self.titiler_endpoint = titiler_endpoint
         self.asset_metadata  # Runs cached_property on class declaration
-        self._validate_assets(validate_individual_assets=True)
+        self._validate_assets(validate_individual_assets=validate_individual_assets)
         self.response  # Should run after asset_metadata to validate assets
 
     def _validate_assets(self, validate_individual_assets=False):
