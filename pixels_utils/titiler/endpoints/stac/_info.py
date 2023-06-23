@@ -69,6 +69,8 @@ class Info:
         self.response  # Should run after asset_metadata to validate assets
 
     def _validate_assets(self, validate_individual_assets=False):
+        # TODO: Consider maintaining a list of available assets for each collection, and checking against that list; see
+        # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability#v0-sentinel-s2-l2a
         if (self.assets is not None) and (set(self.assets) != set(self.asset_metadata.asset_names)):
             invalid_assets = list(set(self.assets) - set(self.asset_metadata.asset_names))
             logging.warning(
@@ -80,16 +82,21 @@ class Info:
         if self.assets is None:
             logging.warning(
                 "`assets=None`; although Titiler defaults to all available assets, availability of assets within a "
-                "catalog are not guaranteed. It is recommended to explicitly pass assets of"
+                "catalog are not guaranteed. It is recommended to explicitly pass desired assets. See availability of "
+                "assets for different Collections in this Confluence page: "
+                "https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability#v0-sentinel-s2-l2a."
             )
 
-        if validate_individual_assets and self.assets:
+        if validate_individual_assets:
             item_url = self.url
             item = item_url.split("/")[-1]
             # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
-            for asset in self.assets:
-                if not _is_asset_available(item_url=item_url, asset=asset):
-                    logging.warning('Asset "%s" is not available from "%s" item.', asset, item)
+            assets = tuple([a for a in self.assets]) if self.assets else self.asset_metadata.asset_names
+            for asset in assets:
+                if _is_asset_available(item_url=item_url, asset=asset):
+                    logging.info('Item "%s" asset is AVAILABLE: "%s".', item, asset)
+                else:
+                    logging.warning('Item "%s" asset is NOT AVAILABLE: "%s".', item, asset)
 
     @cached_property
     def response(
