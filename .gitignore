@@ -16,3 +16,6 @@ pixels_utils/generate_test_data.py
 pixels_utils/mask.py
 pixels_utils/rasterio_helper.py
 pixels_utils/README.md
+pixels_utils/titiler/endpoints/stac/_types.py
+pixels_utils/stac_metadata/batch.py
+pixels_utils/stac_metadata/endpoint.py

@@ -18,11 +18,6 @@ poetry install
 ``` bash
 poetry run pre-commit install
 ```
-### Release/Tags
-- A GitHub release is created on every push to the main branch using the `create_github_release.yml` Github Action Workflow
-- Releases can be created manually through the GitHub Actions UI as well.
-- The name of the Release/Tag will match the value of the version field specified in `pyproject.toml`
-- Release Notes will be generated automatically and linked to the Release/Tag
 
 ## Setup and Installation (used as a library)
 If using `pixels-utils` as a dependency in your script, simply add it to the `pyproject.toml` in your project repo. Be sure to uuse the `ssh:` prefix so Travis has access to the repo for the library build process.
@@ -39,6 +34,18 @@ Install `pixels-utils` and all its dependencies via `poetry install`.
 ``` console
 poetry install
 ```
+
+
+### Catalog Documentation
+[Earth Search STAC API](https://github.com/Element84/earth-search) (maintained by [Element 84](https://element84.com/))
+
+
+### Release/Tags
+- A GitHub release is created on every push to the main branch using the `create_github_release.yml` Github Action Workflow
+- Releases can be created manually through the GitHub Actions UI as well.
+- The name of the Release/Tag will match the value of the version field specified in `pyproject.toml`
+- Release Notes will be generated automatically and linked to the Release/Tag
+
 
 ### Logging style
 This library uses the `"%s"` [logging.Formatter() style](https://docs.python.org/3/library/logging.html#logging.Formatter). For logging messages to show up, style should be set as `style="%s"` (this is the default). The recommended approach is to use the `logging_init()` function from [py-utils](https://github.com/SenteraLLC/py-utils).

@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import Any, Dict, Union
 
@@ -83,10 +84,21 @@ def search_stac_scenes(
         query=query,
     )
     df = DataFrame(s.item_collection_as_dict()["features"])
-    # Append `datetime` and `eo:cloud_cover` columns to main DataFrame
-    df["datetime"] = df["properties"].apply(lambda properties: properties["datetime"])
-    df["eo:cloud_cover"] = df["properties"].apply(lambda properties: properties["eo:cloud_cover"])
-    df = df.sort_values(by="datetime", ascending=True, ignore_index=True)
+    logging.info("search_stac_scenes found %s scenes", len(df))
+    if len(df) == 0:
+        return df
+    if "properties" not in df.columns:
+        logging.warning('"properties" key is not present in "%s" collection and cannot be parsed.', collection)
+    else:
+        prop_keys = [k for k in df.iloc[0]["properties"]]
+        if "datetime" not in prop_keys:
+            logging.warning(
+                '"datetime" key is not present in "properties" of "%s" collection and cannot be added to dataframe.',
+                collection,
+            )
+        else:
+            df["datetime"] = df["properties"].apply(lambda properties: properties["datetime"])
+            df = df.sort_values(by="datetime", ascending=True, ignore_index=True)
     return df
 
 
@@ -103,6 +115,7 @@ def parse_nested_stac_data(df: DataFrame, column: str) -> DataFrame:
     """
     assert column in df.columns, f"Column '{column}' not found in DataFrame"
     assert isinstance(df[column].iloc[0], dict), f"Column '{column}' must be a dict to parse nested data."
+    # TODO: Option to output in either wide or long format?
     return df[column].apply(lambda properties: Series(properties))
 
 
