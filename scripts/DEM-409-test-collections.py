@@ -17,10 +17,10 @@ logging_init(
 
 
 DATA_ID = 1
-EARTHSEARCH_VER = "v0"  # "v0" or "v1"
+EARTHSEARCH_VER = "v1"  # "v0" or "v1"
 
 geojson = sample_feature(DATA_ID)
-date_start = "2022-06-01"  # planting date
+date_start = "2022-01-01"  # planting date
 date_end = "2022-06-30"
 
 logging.info("Earthsearch version: %s", EARTHSEARCH_VER)
@@ -51,7 +51,7 @@ elif EARTHSEARCH_VER == "v1":
 
 # %%
 collections = [EarthSearchCollections[m] for m in EarthSearchCollections.__members__]
-
+# collection = EarthSearchCollections.sentinel_s2_l1c
 for collection in collections:
     logging.info("======================================================")
     logging.info("Evaluating: %s", collection.name)

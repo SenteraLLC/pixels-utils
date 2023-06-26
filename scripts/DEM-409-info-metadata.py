@@ -134,7 +134,8 @@ elif EARTHSEARCH_VER == "v1":
 
 scene_info = Info(
     url=url,
-    assets=assets,
+    # assets=assets,
+    assets=None,
     titiler_endpoint=TITILER_ENDPOINT,
 )
 
