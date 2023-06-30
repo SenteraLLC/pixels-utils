@@ -8,10 +8,10 @@ from requests import Response, get
 from retry import retry
 
 from pixels_utils.stac_metadata import STACMetaData
-from pixels_utils.titiler import TITILER_ENDPOINT
-from pixels_utils.titiler._utilities import validate_assets
+from pixels_utils.titiler._constants import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
+from pixels_utils.titiler.endpoints.stac._utilities import validate_assets
 
 STAC_info = NewType("STAC_info", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"

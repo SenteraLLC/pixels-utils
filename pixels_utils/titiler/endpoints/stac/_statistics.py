@@ -9,13 +9,11 @@ from pyproj.crs import CRS
 from requests import Response, get, post
 from retry import retry
 
-from pixels_utils.constants.sentinel2 import SCL
 from pixels_utils.scenes._utils import _validate_geometry
-from pixels_utils.titiler import TITILER_ENDPOINT, get_assets_expression_query
-from pixels_utils.titiler._utilities import validate_assets
-from pixels_utils.titiler.endpoints.stac import Info
+from pixels_utils.titiler._constants import TITILER_ENDPOINT
+from pixels_utils.titiler.endpoints.stac import STAC_ENDPOINT, Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
-from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
+from pixels_utils.titiler.endpoints.stac._utilities import get_assets_expression_query, validate_assets
 
 STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
@@ -58,10 +56,12 @@ class Statistics:
         self,
         url: str,
         feature: Any = None,
-        assets: ArrayLike[str] = None,
+        # assets: ArrayLike[str] = None,
+        assets: ArrayLike = None,
         expression: str = None,
         asset_as_band: bool = False,
-        asset_bidx: ArrayLike[str] = None,
+        # asset_bidx: ArrayLike[str] = None,
+        asset_bidx: ArrayLike = None,
         coord_crs: CRS = CRS.from_epsg(4326),
         max_size: int = None,
         height: int = None,
@@ -71,13 +71,16 @@ class Statistics:
         unscale: bool = False,
         resampling: str = "nearest",
         categorical: bool = False,
-        c: ArrayLike[Union[float, int]] = None,
-        p: ArrayLike[int] = None,
+        # c: ArrayLike[Union[float, int]] = None,
+        c: ArrayLike = None,
+        # p: ArrayLike[int] = None,
+        p: ArrayLike = None,
         histogram_bins: str = None,
         histogram_range: ArrayLike = None,
         clear_cache: bool = False,
         titiler_endpoint: str = TITILER_ENDPOINT,
-        mask_scl: ArrayLike[SCL] = None,
+        # mask_scl: ArrayLike[SCL] = None,
+        mask_scl: ArrayLike = None,
         whitelist: bool = True,
         validate_individual_assets: bool = True,
     ):
@@ -105,15 +108,15 @@ class Statistics:
         self.mask_scl = mask_scl
         self.whitelist = whitelist
         # self.asset_metadata  # Runs cached_property on class declaration
+
+        self._validate_args()
         validate_assets(
             assets=self.assets,
-            asset_names=self.asset_metadata.asset_names,
+            asset_names=self.scene_info.asset_metadata.asset_names,
             validate_individual_assets=validate_individual_assets,
             url=self.url,
             stac_info_endpoint=STAC_INFO_ENDPOINT,
         )
-
-        self._validate_args
         self.response  # Should run after asset_metadata to validate assets
 
     def _validate_args(self):
@@ -133,6 +136,10 @@ class Statistics:
             self.height = None
             self.width = None
         self.df_nodata = self.scene_info.df_nodata  # Should issue a warning if "nodata" not available for collection
+        assert any(
+            (isinstance(self.coord_crs, str), isinstance(self.coord_crs, CRS))
+        ), '"coord_crs" must be either a str or CRS type'
+        self.coord_crs = self.coord_crs.to_string() if isinstance(self.coord_crs, CRS) else self.coord_crs
 
     @cached_property
     def response(
