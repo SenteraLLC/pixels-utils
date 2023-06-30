@@ -102,19 +102,11 @@ stats = Statistics(
     titiler_endpoint=TITILER_ENDPOINT,
     mask_scl=None,
     whitelist=True,
-    validate_individual_assets=True
-)
-
-
-# %% Extra
-    url=url,
-    # assets=assets,
-    assets=None,
-    titiler_endpoint=TITILER_ENDPOINT,
     validate_individual_assets=True,
 )
 
 
+# %% Extra
 date_start = "2022-02-01"  # planting date
 date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
 
