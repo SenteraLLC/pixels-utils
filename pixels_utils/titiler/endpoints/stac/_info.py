@@ -1,8 +1,10 @@
 import logging
 from functools import cached_property
-from typing import NewType, Tuple
+from typing import ClassVar, List, NewType, Tuple, Type
 
 from joblib import Memory  # type: ignore
+from marshmallow import Schema, ValidationError, validates
+from marshmallow_dataclass import dataclass
 from pandas import DataFrame
 from requests import Response, get
 from retry import retry
@@ -20,6 +22,19 @@ QUERY_URL = "url"
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
 memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done manually)
+
+
+@dataclass  # from marshmallow_dataclass
+class QueryParamsInfo:
+    url: str
+    assets: List[str] = None
+    Schema: ClassVar[Type[Schema]] = Schema
+
+    @validates(field_name="assets")
+    def validate_coord_crs(self, assets):
+        if assets is not None and isinstance(assets, str):
+            raise ValidationError('"assets" must be a list of strings.')
+            # TODO: How to set `data["assets"] = [data["assets"]] if isinstance(data["assets"], str) else data["assets"]``
 
 
 @memory.cache
