@@ -1,6 +1,6 @@
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
-from pixels_utils.titiler.endpoints.stac._info import STAC_INFO_ENDPOINT, Info, STAC_info
+from pixels_utils.titiler.endpoints.stac._info import STAC_INFO_ENDPOINT, Info, QueryParamsInfo, STAC_info
 from pixels_utils.titiler.endpoints.stac._statistics import (
     STAC_STATISTICS_ENDPOINT,
     QueryParamsStatistics,
@@ -17,12 +17,13 @@ __all__ = [
     "STAC_ENDPOINT",
     "online_status_stac",
     "Info",
+    "QueryParamsInfo",
     "STAC_info",
     "STAC_INFO_ENDPOINT",
-    "QueryParamsStatistics",
     "STAC_STATISTICS_ENDPOINT",
-    "Statistics",
+    "QueryParamsStatistics",
     "STAC_statistics",
+    "Statistics",
     "_check_asset_main",
     "get_assets_expression_query",
     "to_pixel_dimensions",
