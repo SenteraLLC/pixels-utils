@@ -11,7 +11,7 @@ from utils.logging.tqdm import logging_init
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
 from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
 from pixels_utils.titiler import TITILER_ENDPOINT
-from pixels_utils.titiler.endpoints.stac import Statistics
+from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics
 
 logging_init(
     level=logging.INFO,
@@ -61,9 +61,9 @@ url = EARTHSEARCH_SCENE_URL.format(collection=df_scenes.iloc[0]["collection"], i
 assets = None
 assets = ["nir"]
 expression = None
-asset_as_band = True  # ?
+asset_as_band = None  # ?
 asset_bidx = None  # ?
-coord_crs = CRS.from_epsg(4326)
+coord_crs = CRS.from_epsg(4326).to_string()
 max_size = None
 height = None
 width = None
@@ -71,14 +71,14 @@ gsd = 20
 nodata = None
 unscale = None
 resampling = "nearest"
-categorical = False
+categorical = None
 c = None
 p = None
 histogram_bins = None
 histogram_range = None
 
 
-stats = Statistics(
+query_params = QueryParamsStatistics(
     url=url,
     feature=feature,
     assets=assets,
@@ -98,7 +98,11 @@ stats = Statistics(
     p=p,
     histogram_bins=histogram_bins,
     histogram_range=histogram_range,
-    clear_cache=True,
+)
+
+
+stats = Statistics(
+    query_params=query_params,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_scl=None,
     whitelist=True,
@@ -106,6 +110,7 @@ stats = Statistics(
 )
 
 
+# serialized_query_params = stats.serialized_query_params
 # %% Extra
 date_start = "2022-02-01"  # planting date
 date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
