@@ -39,7 +39,7 @@ def _validate_collections(
     return collection
 
 
-def _validate_geometry(geom: Any) -> Bounds:
+def _validate_geometry(geom: Any):
     """
     Validates the passed geometry object and raises an informative error if problem is detected.
 
