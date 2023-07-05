@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from functools import cached_property
 
 from pixels_utils.stac_catalogs.earthsearch import AutoDashNameEnum
 
@@ -17,3 +18,7 @@ class EarthSearchCollections(AutoDashNameEnum):
         if isinstance(string, Enum):
             string = string.name
         return self.name == string
+
+    @cached_property
+    def _version(self):
+        return "v0"

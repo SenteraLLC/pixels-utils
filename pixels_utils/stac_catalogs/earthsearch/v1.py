@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum, auto
+from functools import cached_property
 
 from spyndex import indices as spyndex_indices
 
@@ -25,12 +26,22 @@ class EarthSearchCollections(AutoDashNameEnum):
             string = string.name
         return self.name == string
 
+    @cached_property
+    def _version(self):
+        return "v1"
+
 
 def expression_from_collection(
     collection: EarthSearchCollections = EarthSearchCollections.sentinel_2_l2a, spectral_index: str = "NDVI"
 ) -> Expression:
+    assert collection._version == "v1", (
+        f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
+        f'v1). Ensure both the "{collection}" and expression_from_collection() function are imported from the same '
+        "version of `pixels_utils.stac_catalogs.earthsearch`."
+    )
     stac_collection_url = EARTHSEARCH_COLLECTION_URL.format(collection=collection.name)
     stac_metadata = STACMetaData(collection_url=stac_collection_url)
+    # TODO: stac_metadata.parse_asset_bands("eo:bands", return_dataframe=True) for support of EarthSearch v0
     assert set(Expression(spyndex_object=spyndex_indices[spectral_index]).assets).issubset(
         set(stac_metadata.asset_names)
     ), f'Assets for spectral index "{spectral_index}" are not available in collection "{collection}".'
@@ -43,6 +54,11 @@ def expression_from_collection(
 def expressions_from_collection(
     collection: EarthSearchCollections = EarthSearchCollections.sentinel_2_l2a,
 ) -> Expressions:
+    assert collection._version == "v1", (
+        f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
+        f'v1). Ensure both the "{collection}" and expression_from_collection() function are imported from the same '
+        "version of `pixels_utils.stac_catalogs.earthsearch`."
+    )
     # Get list of assets in collection and filter spyndex_bands by collection assets
     stac_collection_url = EARTHSEARCH_COLLECTION_URL.format(collection=collection.name)
     stac_metadata = STACMetaData(collection_url=stac_collection_url)
