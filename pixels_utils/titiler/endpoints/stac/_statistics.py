@@ -13,8 +13,9 @@ from requests import Response, get, post
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
-from pixels_utils.titiler._constants import TITILER_ENDPOINT
-from pixels_utils.titiler.endpoints.stac import STAC_ENDPOINT, Info
+from pixels_utils.titiler import TITILER_ENDPOINT
+from pixels_utils.titiler.endpoints import STAC_ENDPOINT
+from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
 

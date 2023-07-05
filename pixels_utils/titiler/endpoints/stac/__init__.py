@@ -1,5 +1,4 @@
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
-from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac._info import STAC_INFO_ENDPOINT, Info, QueryParamsInfo, STAC_info
 from pixels_utils.titiler.endpoints.stac._statistics import (
     STAC_STATISTICS_ENDPOINT,
@@ -15,7 +14,6 @@ from pixels_utils.titiler.endpoints.stac._utilities import (  # _check_asset_mai
 )
 
 __all__ = [
-    "STAC_ENDPOINT",
     "online_status_stac",
     "Info",
     "QueryParamsInfo",

@@ -8,7 +8,7 @@ from requests import get
 
 # from pixels_utils.constants.sentinel2 import SCL
 # from pixels_utils.mask import build_numexpr_scl_mask
-from pixels_utils.titiler.endpoints.stac._constants import STAC_ENDPOINT
+from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 
