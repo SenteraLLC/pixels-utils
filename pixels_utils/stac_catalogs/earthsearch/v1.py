@@ -34,6 +34,21 @@ class EarthSearchCollections(AutoDashNameEnum):
 def expression_from_collection(
     collection: EarthSearchCollections = EarthSearchCollections.sentinel_2_l2a, spectral_index: str = "NDVI"
 ) -> Expression:
+    """
+    Returns an Expression object for a given collection and spectral index.
+
+    See `spyndex_indices` for a list of available spectral indices.
+
+    Args:
+        collection (EarthSearchCollections, optional): The collection that spectral_index should be tailored to.
+        Defaults to EarthSearchCollections.sentinel_2_l2a.
+
+        spectral_index (str, optional): The acronym for the spectral index you'd like returned as an Expression. Must be
+        a spectral index available via spyndex. Defaults to "NDVI".
+
+    Returns:
+        Expression: Teh tailored Expression object.
+    """
     assert collection._version == "v1", (
         f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
         f'v1). Ensure both the "{collection}" and expression_from_collection() function are imported from the same '
@@ -54,6 +69,16 @@ def expression_from_collection(
 def expressions_from_collection(
     collection: EarthSearchCollections = EarthSearchCollections.sentinel_2_l2a,
 ) -> Expressions:
+    """
+    Returns an Expressions object for a given collection containing all available spectral indices.
+
+    Args:
+        collection (EarthSearchCollections, optional): The collection to generate Expressions for. Defaults to
+        EarthSearchCollections.sentinel_2_l2a.
+
+    Returns:
+        Expressions: The Expressions object containing all available spectral indices for the given collection.
+    """
     assert collection._version == "v1", (
         f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
         f'v1). Ensure both the "{collection}" and expression_from_collection() function are imported from the same '
