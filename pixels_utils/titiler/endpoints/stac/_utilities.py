@@ -80,6 +80,19 @@ def validate_assets(
     url: str = None,
     stac_info_endpoint: str = STAC_INFO_ENDPOINT,
 ) -> List:
+    """
+    Validates that the assets passed to the Info endpoint are valid for the given STAC item.
+
+    Args:
+        assets (ArrayLike): Assets passed to the Info endpoint.
+        asset_names (ArrayLike): Assets available for the STAC item.
+        validate_individual_assets (bool, optional): Whether to validate each asset individually. Defaults to False.
+        url (str, optional): The STAC item URL. Defaults to None.
+        stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
+
+    Returns:
+        List: Valid assets; if validate_individual_assets is True, this included only the valid assets.
+    """
     # TODO: Consider maintaining a list of available assets for each collection, and checking against that list; see
     # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
     if (assets is not None) and (set(assets) != set(asset_names)):
@@ -102,10 +115,13 @@ def validate_assets(
         item_url = url
         item = item_url.split("/")[-1]
         # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
-        assets = tuple([a for a in assets]) if assets else asset_names
-        for asset in assets:
+        assets_all = tuple([a for a in assets]) if assets else asset_names
+        assets_available = []
+        for asset in assets_all:
             if is_asset_available(item_url=item_url, asset=asset, stac_info_endpoint=stac_info_endpoint):
                 logging.info('Item "%s" asset is AVAILABLE: "%s".', item, asset)
+                assets_available.append(asset)
             else:
                 logging.warning('Item "%s" asset is NOT AVAILABLE: "%s".', item, asset)
+        return tuple(assets_available)
     return assets

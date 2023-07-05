@@ -75,7 +75,7 @@ class Info:
         self.assets = assets
         self.titiler_endpoint = titiler_endpoint
         self.asset_metadata  # Runs cached_property on class declaration
-        validate_assets(
+        self.assets_valid = validate_assets(
             assets=self.assets,
             asset_names=self.asset_metadata.asset_names,
             validate_individual_assets=validate_individual_assets,
@@ -96,7 +96,7 @@ class Info:
             STAC_info: Response from the titiler stac info endpoint.
         """
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.url)
-        validate_assets(
+        _ = validate_assets(
             assets=self.assets,
             asset_names=self.asset_metadata.asset_names,
             validate_individual_assets=False,

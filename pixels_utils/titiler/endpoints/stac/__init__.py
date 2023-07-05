@@ -6,6 +6,7 @@ from pixels_utils.titiler.endpoints.stac._statistics import (
     QueryParamsStatistics,
     STAC_statistics,
     Statistics,
+    StatisticsPreValidation,
 )
 from pixels_utils.titiler.endpoints.stac._utilities import (  # _check_asset_main,; _check_assets_expression,; get_assets_expression_query,
     is_asset_available,
@@ -23,6 +24,7 @@ __all__ = [
     "STAC_STATISTICS_ENDPOINT",
     "QueryParamsStatistics",
     "STAC_statistics",
+    "StatisticsPreValidation",
     "Statistics",
     "_check_asset_main",
     "get_assets_expression_query",

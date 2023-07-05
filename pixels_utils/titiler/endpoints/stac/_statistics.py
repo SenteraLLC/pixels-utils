@@ -1,4 +1,5 @@
 import logging
+import re
 from dataclasses import field
 from functools import cached_property
 from typing import Any, ClassVar, List, NewType, Type, Union
@@ -16,7 +17,7 @@ from pixels_utils.scenes._utils import _validate_geometry
 from pixels_utils.titiler._constants import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import STAC_ENDPOINT, Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
-from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions, validate_assets
+from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
 
 STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
@@ -63,6 +64,8 @@ class QueryParamsStatistics:
                 CRS.from_authority(auth_name=auth_name, code=code)
             except CRSError as e:
                 raise ValidationError(e)
+        else:
+            raise ValidationError('"coord_crs" cannot be passed as `None`.')
 
     @validates(field_name="feature")
     def validate_geometry(self, feature):
@@ -95,6 +98,68 @@ class QueryParamsStatistics:
     #     ordered = True  # maintains order in which fields were declared
 
 
+class StatisticsPreValidation:
+    def __init__(
+        self,
+        query_params: QueryParamsStatistics,
+        titiler_endpoint: str = TITILER_ENDPOINT,
+    ):
+        self.query_params = query_params
+        self.serialized_query_params = QueryParamsStatistics.Schema().dump(
+            query_params
+        )  # Use Schema(only=["url", "assets", "feature", "gsd"]) to filter
+
+        self.titiler_endpoint = titiler_endpoint
+        self.scene_info = None
+        self.df_nodata = None
+
+        errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
+        if errors:
+            raise ValidationError(errors)
+
+        # Step 1: Get valid assets for the URL (could also do after Step 3)
+        self.scene_info = Info(
+            url=self.serialized_query_params["url"],
+            titiler_endpoint=TITILER_ENDPOINT,
+            validate_individual_assets=True,
+        )
+
+        # Step 2: Extract the assets/expression from the query_params
+        assets, expression = [self.serialized_query_params.get(i, None) for i in ["assets", "expression"]]
+        self.serialized_query_params["assets"] = [assets] if isinstance(assets, str) else assets
+
+        # Step 3: Get a list of assets from the assets or expression that was passed
+        # regex retrieves assets from expression, delimites by comma, and drops empty strings, leftover digits, and
+        # duplicates; e.g.:
+        # list(set([i for i in re.sub("\W+", ",", "nir/red").split(",") if not i.isdigit()]))  # ['nir', 'red']
+        # list(set([i for i in re.sub("\W+", ",", "3*(nir2/blue) + 0.13").split(",") if not i.isdigit()]))  # ['nir2', 'blue']
+        # list(set([i for i in re.sub("\W+", ",", "3*(nir2/blue) + 0.13*nir2").split(",") if not i.isdigit()]))  # ['nir2', 'blue']
+
+        assets_ = (
+            list(
+                set(
+                    filter(
+                        None, [i for i in re.sub("\W+", ",", expression).split(",") if not i.isdigit()]  # noqa: W605
+                    )
+                )
+            )
+            if expression
+            else assets
+        )
+
+        # Step 4: Validate the list of assets against the available assets
+        assert set(assets_).issubset(
+            set(self.scene_info.assets_valid)
+        ), f"The following assets are not available: {list(set(assets_) - set(self.scene_info.assets_valid))}"
+
+        logging.info("StatisticsPreValidation passed: all required assets are available.")
+
+        # TODO: Consider doing other checks/exposing other info in this class, e.g.:
+        # self.df_nodata = (
+        #     self.scene_info.df_nodata
+        # )  # Should issue a warning if "nodata" not available for collection
+
+
 @memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Statistics:
@@ -117,9 +182,6 @@ class Statistics:
 
         titiler_endpoint (str): The `https://myendpoint` part of the example URL above. Defaults to
         `https://pixels.sentera.com/stac/info`.
-
-        validate_individual_assets (bool): Whether to validate each asset individually during __init__(). Defaults to
-        True.
     """
 
     def __init__(
@@ -130,7 +192,6 @@ class Statistics:
         # mask_scl: Iterable[SCL] = None,
         mask_scl: ArrayLike = None,
         whitelist: bool = True,
-        validate_individual_assets: bool = True,
     ):
         self.query_params = query_params
         self.serialized_query_params = QueryParamsStatistics.Schema().dump(
@@ -141,7 +202,6 @@ class Statistics:
         self.titiler_endpoint = titiler_endpoint
         self.mask_scl = mask_scl
         self.whitelist = whitelist
-        self.validate_individual_assets = validate_individual_assets
 
         errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
         if errors:
@@ -159,24 +219,12 @@ class Statistics:
             if not [x for x in (feature, gsd) if x is None]  # if either feature or gsd is None
             else [None, None]
         )
-        # TODO:
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
         # self.geometry = shapely_to_geojson_geometry(geojson_to_shapely(self.query_params.feature))
-        self.scene_info = Info(
-            url=self.serialized_query_params["url"],
-            assets=self.serialized_query_params["assets"],
-            titiler_endpoint=TITILER_ENDPOINT,
-            validate_individual_assets=False,
-        )
-        self.df_nodata = self.scene_info.df_nodata  # Should issue a warning if "nodata" not available for collection
-        validate_assets(
-            assets=self.serialized_query_params["assets"],
-            asset_names=self.scene_info.asset_metadata.asset_names,
-            validate_individual_assets=self.validate_individual_assets,
-            url=self.serialized_query_params["url"],
-            stac_info_endpoint=STAC_INFO_ENDPOINT,
-        )
+
+        # TODO: if self.response is not a 200, issue a warning and notify user to validate assets prior to running stats
+
         self.response  # Should run at end of __post_init__() after validate_assets()
 
     @cached_property
@@ -190,13 +238,6 @@ class Statistics:
             STAC_statistics: Response from the titiler stac statistics endpoint.
         """
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.query_params.url)
-        # self._validate_assets(
-        #     validate_individual_assets=False
-        # )  # Validate again in case anything changed since class declaration
-
-        assert set(self.query_params.assets).issubset(
-            set(self.scene_info.asset_metadata.asset_names)
-        ), "Assets not valid for collection."
         # query = generate_base_query(**self.serialized_query_params)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
         # TODO: Consider mask_scl and whitelist, adjusting assets and/or expression accordingly
