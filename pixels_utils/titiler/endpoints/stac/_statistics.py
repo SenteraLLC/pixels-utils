@@ -7,7 +7,6 @@ from typing import Any, ClassVar, List, NewType, Type, Union
 from joblib import Memory  # type: ignore
 from marshmallow import Schema, ValidationError, validate, validates, validates_schema
 from marshmallow_dataclass import dataclass
-from numpy.typing import ArrayLike
 from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from requests import Response, get, post
@@ -31,22 +30,20 @@ memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done
 
 @dataclass  # from marshmallow_dataclass
 class QueryParamsStatistics:
+    """Organize and validate QueryParams for the STAC statistics endpoint."""
+
     url: str
     feature: Any = None
     assets: List[str] = None
     expression: str = None
-    # asset_as_band: bool = False
     asset_as_band: bool = None
     asset_bidx: List[str] = None
-    coord_crs: str = CRS.from_epsg(4326).to_string()  # TODO: How to pass as a CRS type?
+    coord_crs: str = None  # CRS.from_epsg(4326).to_string()  # TODO: How to pass as a CRS type?
     max_size: int = None
     height: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
     width: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
     gsd: Union[int, float] = field(default=None, metadata=dict(validate=validate.Range(min=1e-6)))
     nodata: Union[int, float] = None
-    # unscale: bool = False
-    # resampling: str = "nearest"
-    # categorical: bool = False
     unscale: bool = None
     resampling: str = field(default=None, metadata=dict(validate=validate.OneOf(list(Resampling._member_map_.keys()))))
     categorical: bool = None
@@ -64,8 +61,8 @@ class QueryParamsStatistics:
                 CRS.from_authority(auth_name=auth_name, code=code)
             except CRSError as e:
                 raise ValidationError(e)
-        else:
-            raise ValidationError('"coord_crs" cannot be passed as `None`.')
+        # else:
+        #     raise ValidationError('"coord_crs" cannot be passed as `None`.')
 
     @validates(field_name="feature")
     def validate_geometry(self, feature):
@@ -74,6 +71,16 @@ class QueryParamsStatistics:
                 _validate_geometry(feature)
             except TypeError as e:
                 raise ValidationError(e)
+
+    @validates(field_name="asset_as_band")
+    def validate_asset_as_band(self, asset_as_band):
+        if asset_as_band is None or asset_as_band is False:
+            logging.warning(
+                (
+                    "If you don't use `asset_as_band=True` option, band indexes must be passed within the expression "
+                    '(e.g., "(nir_b1/red_b1)") - this is a primary reason for "Bad Request" errors.'
+                )
+            )
 
     @validates_schema
     def validate_gsd_height_width(self, data, **kwargs):
@@ -104,6 +111,17 @@ class StatisticsPreValidation:
         query_params: QueryParamsStatistics,
         titiler_endpoint: str = TITILER_ENDPOINT,
     ):
+        """
+        Performs pre-validation of Statistics QueryParams.
+
+        Args:
+            query_params (QueryParamsStatistics): The query parameters to validate.
+            titiler_endpoint (str, optional): The titiler endpoing to perform requests. Defaults to TITILER_ENDPOINT.
+
+        Raises:
+            ValidationError: If the query_params are invalid (i.e., if they do not properly serialize).
+            AssertionError: If any of the assets (or assets within the expression) are not available for the collection.
+        """
         self.query_params = query_params
         self.serialized_query_params = QueryParamsStatistics.Schema().dump(
             query_params
@@ -173,15 +191,15 @@ class Statistics:
     https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
 
     Example:
-        TODO: https://myendpoint/stac/statistics?url=https://somewhere.com/item.json&assets=B01
+        https://pixels.sentera.com/stac/statistics?&assets=nir&feature=type&feature=geometry&feature=properties&url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2B_10TGS_20220608_0_L2A
+        https://pixels.sentera.com/stac/statistics?asset_as_band=True&expression=%28nir-red%29%2F%28nir%2Bred%29&feature=type&feature=geometry&feature=properties&url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2B_10TGS_20220608_0_L2A
 
     Args:
-        url (str): STAC item URL; the `https://somewhere.com/item.json` part of the example URL above.
-        assets (Tuple[str], optional): Asset names; the `B01` part of the example URL above. Defaults to all available
-        assets.
-
+        query_params (QueryParamsStatistics): The QueryParams to pass to the statistics endpoint (see titiler docs for
+        more information).
+        clear_cache (bool, optional): Whether to clear the cache. Defaults to False.
         titiler_endpoint (str): The `https://myendpoint` part of the example URL above. Defaults to
-        `https://pixels.sentera.com/stac/info`.
+        `https://pixels.sentera.com/stac/statistics`.
     """
 
     def __init__(
@@ -189,9 +207,8 @@ class Statistics:
         query_params: QueryParamsStatistics,
         clear_cache: bool = False,
         titiler_endpoint: str = TITILER_ENDPOINT,
-        # mask_scl: Iterable[SCL] = None,
-        mask_scl: ArrayLike = None,
-        whitelist: bool = True,
+        # mask_scl: ArrayLike = None,
+        # whitelist: bool = True,
     ):
         self.query_params = query_params
         self.serialized_query_params = QueryParamsStatistics.Schema().dump(
@@ -200,8 +217,8 @@ class Statistics:
 
         self.clear_cache = clear_cache
         self.titiler_endpoint = titiler_endpoint
-        self.mask_scl = mask_scl
-        self.whitelist = whitelist
+        # self.mask_scl = mask_scl
+        # self.whitelist = whitelist
 
         errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
         if errors:
@@ -222,10 +239,7 @@ class Statistics:
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
         # self.geometry = shapely_to_geojson_geometry(geojson_to_shapely(self.query_params.feature))
-
-        # TODO: if self.response is not a 200, issue a warning and notify user to validate assets prior to running stats
-
-        self.response  # Should run at end of __post_init__() after validate_assets()
+        self.response
 
     @cached_property
     def response(
