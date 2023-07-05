@@ -1,17 +1,15 @@
 # %% Imports
 import logging
-from datetime import datetime
-from os.path import join as os_join
-from pathlib import Path
 
-from dateutil.relativedelta import relativedelta
-from pyproj.crs import CRS
+from spyndex import indices as spyndex_indices
 from utils.logging.tqdm import logging_init
 
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
-from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
+from pixels_utils.stac_catalogs import Expression
+from pixels_utils.stac_catalogs.earthsearch.v1 import expression_from_collection, expressions_from_collection
+from pixels_utils.tests.data.load_data import sample_feature
 from pixels_utils.titiler import TITILER_ENDPOINT
-from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics
+from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics, StatisticsPreValidation
 
 logging_init(
     level=logging.INFO,
@@ -21,7 +19,6 @@ logging_init(
 
 # %% Settings
 DATA_ID = 1
-OUTPUT_DIR = Path("/mnt/c/Users/Tyler/Downloads")
 EARTHSEARCH_VER = "v1"  # "v0" or "v1"
 
 feature = sample_feature(DATA_ID)
@@ -60,9 +57,9 @@ url = EARTHSEARCH_SCENE_URL.format(collection=df_scenes.iloc[0]["collection"], i
 # scene_url = sample_scene_url(DATA_ID)
 assets = None
 expression = None
-asset_as_band = None  # ?
+asset_as_band = True  # If you don't use `asset_as_band=True` option, band indexes must be passed within the expression (e.g., "(nir_b1-red_b1)/(nir_b1+red_b1)")
 asset_bidx = None  # ?
-coord_crs = CRS.from_epsg(4326).to_string()  # Cannot be null
+coord_crs = None  # CRS.from_epsg(4326).to_string()
 max_size = None
 height = None
 width = None
@@ -76,12 +73,14 @@ p = None
 histogram_bins = None
 histogram_range = None
 
-# %% Basic Statistics request
+# %% Perform StatisticsPreValidation (maybe run once before running Statistics for a number of geometries or date ranges)
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
 query_params = QueryParamsStatistics(
     url=url,
     feature=feature,
     assets=assets,  # ["nir"]
-    expression="nir/red",  # "nir/red"
+    expression=collection_ndvi.expression,  # "(nir-red)/(nir+red)"
     asset_as_band=asset_as_band,
     asset_bidx=asset_bidx,
     coord_crs=coord_crs,
@@ -99,39 +98,21 @@ query_params = QueryParamsStatistics(
     histogram_range=histogram_range,
 )
 
+StatisticsPreValidation(query_params, titiler_endpoint=TITILER_ENDPOINT)
+# Raises an AssertionError if any of the assets are not available for the query_params
+# If you get a message "StatisticsPreValidation passed: all required assets are available.", you can proceed to Statistics
 
+# %% Now actually request Statistics
 stats = Statistics(
-    query_params=query_params,
+    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
-    mask_scl=None,
-    whitelist=True,
-    validate_individual_assets=False,
 )
+stats.response.url
+stats.response.json()
 
 
-# serialized_query_params = stats.serialized_query_params
-
-# %% Pass both assets and expression to throw ValidationError
-query_params = QueryParamsStatistics(
-    url=url,
-    feature=feature,
-    assets=["nir"],  # it is not valid to pass both assets and expression
-    expression="nir/red",
-    gsd=20,
-)
-
-stats = Statistics(
-    query_params=query_params,
-    titiler_endpoint=TITILER_ENDPOINT,
-    mask_scl=None,
-    whitelist=True,
-    validate_individual_assets=True,
-)
-
-# %% Retrive NDVI expression via Expression classes (adapted from spyndex)
-
-from pixels_utils.stac_catalogs.earthsearch.v1 import expression_from_collection, expressions_from_collection
+# %% Explore the Expression class to retrive NDVI expression (adapted from spyndex)
 
 # sentinel_2_l2a_indices = expressions_from_collection(collection=EarthSearchCollections.sentinel_2_l2a)
 collection_indices = expressions_from_collection(collection=collection)
@@ -146,52 +127,93 @@ print(collection_ndvi.expression)  # '(nir-red)/(nir+red)'
 print(collection_ndvi.bands)  # ['N', 'R']
 print(collection_ndvi.formula)  # (N-R)/(N+R)
 
+# Explore some of the different indexes available for the Sentinel-2 L2A collection
+collection_indices.__dict__
 
+
+# %% Get stats for MTVI2 (Modified Triangular Vegetation Index 2)
 query_params = QueryParamsStatistics(
     url=url,
     feature=feature,
-    expression=collection_indices.NDVI.expression,
+    asset_as_band=True,
+    expression=collection_indices.MTVI2.expression,
     gsd=20,
 )
 
 stats = Statistics(
     query_params=query_params,
     titiler_endpoint=TITILER_ENDPOINT,
-    mask_scl=None,
-    whitelist=True,
-    validate_individual_assets=True,
 )
-
-# %% Override expression of Expression class
-from spyndex import indices as spyndex_indices
-
-from pixels_utils.stac_catalogs import Expression
-
-ndvi = Expression(
-    spyndex_object=spyndex_indices.NDVI,
-    formula_override="custom_nir-custom_red/custom_nir+custom_red",
-    assets_override=["custom_nir", "custom_red"],
-)
-
-# %% Extra
-date_start = "2022-02-01"  # planting date
-date_end = (datetime.strptime(date_start, "%Y-%m-%d") + relativedelta(months=6)).date()
+stats.response.json()
 
 
-df_stats = statistics(
-    date_start,
-    date_end,
+# %% Pass both assets and expression to throw ValidationError
+query_params = QueryParamsStatistics(
+    url=url,
     feature=feature,
-    collection=collection,
+    asset_as_band=True,
+    assets=["nir"],  # it is not valid to pass both assets and expression
+    expression=expression_from_collection(
+        collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI"
+    ).expression,
+    gsd=20,
+)
+
+stats = Statistics(
+    query_params=query_params,
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+)
+# ValidationError: {'_schema': ['Both "assets" and "expression" were passed, but only one is allowed.']}
+
+# %% Override expression of Expression class (when spyndex doesn't perfectly match the needed expression)
+ndre = Expression(
+    spyndex_object=spyndex_indices.NDREI,
+    expression_override="(nir-rededge1)/(nir+rededge1)",
+    assets_override=["nir", "rededge1"],
+)
+
+query_params = QueryParamsStatistics(
+    url=url,
+    feature=feature,
+    asset_as_band=True,
+    expression=ndre.expression,
+    gsd=20,
+)
+
+stats = Statistics(
+    query_params=query_params,
+    titiler_endpoint=TITILER_ENDPOINT,
+)
+stats.response.json()
+
+# %% Play around with any of the Statistics QueryParams  (Testing TBD)
+# https://developmentseed.org/titiler/endpoints/stac/#statistics
+
+query_params = QueryParamsStatistics(
+    url=url,  # required
+    feature=feature,
     assets=assets,
-    expression=expression,
-    mask_scl=mask_scl,
-    whitelist=whitelist,
-    nodata=nodata,
+    expression=collection_ndvi.expression,  # "(nir-red)/(nir+red)"
+    asset_as_band=True,  # Be sure to pass this as True (otherwise expression should be of the form "(nir_b1-red_b1)/(nir_b1+red_b1)")
+    asset_bidx=asset_bidx,
+    coord_crs=coord_crs,
+    max_size=max_size,
+    height=height,
+    width=width,
     gsd=gsd,
+    nodata=nodata,
+    unscale=unscale,
     resampling=resampling,
     categorical=categorical,
     c=c,
+    p=p,
     histogram_bins=histogram_bins,
+    histogram_range=histogram_range,
 )
-df_stats.to_csv(os_join(OUTPUT_DIR, "pixels-titiler-test2.csv"), index=False)
+
+stats = Statistics(
+    query_params=query_params,
+    titiler_endpoint=TITILER_ENDPOINT,
+)
+stats.response.json()
