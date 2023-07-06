@@ -113,7 +113,7 @@ class StatisticsPreValidation:
         titiler_endpoint: str = TITILER_ENDPOINT,
     ):
         """
-        Performs pre-validation of Statistics QueryParams.
+        Performs pre-validation of Statistics QueryParams, which should run before making many calls via `Statistics`.
 
         Args:
             query_params (QueryParamsStatistics): The query parameters to validate.
