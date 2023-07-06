@@ -47,7 +47,7 @@ def expression_from_collection(
         a spectral index available via spyndex. Defaults to "NDVI".
 
     Returns:
-        Expression: Teh tailored Expression object.
+        Expression: The tailored Expression object.
     """
     assert collection._version == "v1", (
         f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
