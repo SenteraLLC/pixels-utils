@@ -117,7 +117,7 @@ class StatisticsPreValidation:
 
         Args:
             query_params (QueryParamsStatistics): The query parameters to validate.
-            titiler_endpoint (str, optional): The titiler endpoing to perform requests. Defaults to TITILER_ENDPOINT.
+            titiler_endpoint (str, optional): The titiler endpoint to perform requests. Defaults to TITILER_ENDPOINT.
 
         Raises:
             ValidationError: If the query_params are invalid (i.e., if they do not properly serialize).
