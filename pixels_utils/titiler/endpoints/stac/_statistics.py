@@ -232,11 +232,11 @@ class Statistics:
         feature, gsd, height, width = [
             self.serialized_query_params.get(i, None) for i in ["feature", "gsd", "height", "width"]
         ]
-        # The following sets height and width if either feature or gsd is set (otherwise defaults to that of the asset)
+        # Run to_pixel_dimensions() if feature is set (otherwise pass whatever already exists for height and width
         self.serialized_query_params["height"], self.serialized_query_params["width"] = (
             to_pixel_dimensions(geojson=feature, height=height, width=width, gsd=gsd)
-            if not [x for x in (feature, gsd) if x is None]  # if either feature or gsd is set
-            else [None, None]
+            if feature is not None
+            else [height, width]
         )
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
