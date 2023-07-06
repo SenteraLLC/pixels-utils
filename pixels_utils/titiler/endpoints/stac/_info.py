@@ -96,14 +96,6 @@ class Info:
             STAC_info: Response from the titiler stac info endpoint.
         """
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.url)
-        _ = validate_assets(
-            assets=self.assets,
-            asset_names=self.asset_metadata.asset_names,
-            validate_individual_assets=False,
-            url=self.url,
-            stac_info_endpoint=STAC_INFO_ENDPOINT,
-        )  # Validate again in case anything changed since class declaration
-
         query = {
             QUERY_URL: self.url,
             QUERY_ASSETS: self.assets,
