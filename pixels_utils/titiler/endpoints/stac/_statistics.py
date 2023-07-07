@@ -1,6 +1,7 @@
 import logging
 import re
 from dataclasses import field
+from enum import Enum
 from functools import cached_property
 from typing import Any, ClassVar, List, NewType, Type, Union
 
@@ -18,6 +19,7 @@ from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
+from pixels_utils.titiler.mask import build_numexpr_mask_enum, validate_mask_enum
 
 STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
@@ -208,8 +210,8 @@ class Statistics:
         query_params: QueryParamsStatistics,
         clear_cache: bool = False,
         titiler_endpoint: str = TITILER_ENDPOINT,
-        # mask_scl: ArrayLike = None,
-        # whitelist: bool = True,
+        mask_enum: List[Enum] = None,
+        whitelist: bool = True,
     ):
         self.query_params = query_params
         self.serialized_query_params = QueryParamsStatistics.Schema().dump(
@@ -218,8 +220,8 @@ class Statistics:
 
         self.clear_cache = clear_cache
         self.titiler_endpoint = titiler_endpoint
-        # self.mask_scl = mask_scl
-        # self.whitelist = whitelist
+        self.mask_enum = mask_enum
+        self.whitelist = whitelist
 
         errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
         if errors:
@@ -256,7 +258,17 @@ class Statistics:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.query_params.url)
         # query = generate_base_query(**self.serialized_query_params)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
-        # TODO: Consider mask_scl and whitelist, adjusting assets and/or expression accordingly
+
+        # TODO: Consider mask_enum and whitelist, adjusting assets and/or expression accordingly
+        if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
+            validate_mask_enum(query_params=self.query_params, mask_enum=self.mask_enum)
+            self.serialized_query_params["expression"] = build_numexpr_mask_enum(
+                expression=self.serialized_query_params["expression"],
+                mask_enum=self.mask_enum,
+                whitelist=self.whitelist,
+                mask_value=self.serialized_query_params["nodata"],
+            )
+
         if self.clear_cache is True:
             headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
         else:
