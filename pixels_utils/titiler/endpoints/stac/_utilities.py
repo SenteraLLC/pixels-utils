@@ -43,12 +43,12 @@ def to_pixel_dimensions(geojson: Any, height: int, width: int, gsd: Union[int, f
     """
     bounds = geojson_to_shapely(validate_geojson(geojson)).bounds
 
-    if height is None:
+    if height is None and gsd is not None:
         p1 = (bounds[1], bounds[0])
         p2 = (bounds[3], bounds[0])
         height = abs(round(distance(p1, p2).meters / gsd))
 
-    if width is None:
+    if width is None and gsd is not None:
         p3 = (bounds[1], bounds[0])
         p4 = (bounds[1], bounds[2])
         width = abs(round(distance(p3, p4).meters / gsd))
