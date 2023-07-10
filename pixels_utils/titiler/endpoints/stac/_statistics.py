@@ -19,7 +19,7 @@ from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
-from pixels_utils.titiler.mask import build_numexpr_mask_enum, validate_mask_enum
+from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 
 STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
@@ -245,6 +245,20 @@ class Statistics:
         )
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
+        # TODO: Consider mask_enum and whitelist, adjusting assets and/or expression accordingly
+        # Note: Assets do not do not accept numexpr functions
+        if self.mask_enum is not None and self.serialized_query_params["assets"] is not None:
+            logging.warning(
+                "`assets` do not accept numexpr functions, so `mask_enum` will be ignored. Use `expression` instead."
+            )
+        if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
+            logging.info("Adding masking parameters to `expression`.")
+            self.serialized_query_params["expression"] = build_numexpr_mask_enum(
+                expression=self.serialized_query_params["expression"],
+                mask_enum=self.mask_enum,
+                whitelist=self.whitelist,
+                mask_value=self.serialized_query_params["nodata"],
+            )
         # self.geometry = shapely_to_geojson_geometry(geojson_to_shapely(self.query_params.feature))
         self.response
 
@@ -261,16 +275,6 @@ class Statistics:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.query_params.url)
         # query = generate_base_query(**self.serialized_query_params)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
-
-        # TODO: Consider mask_enum and whitelist, adjusting assets and/or expression accordingly
-        if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
-            validate_mask_enum(query_params=self.query_params, mask_enum=self.mask_enum)
-            self.serialized_query_params["expression"] = build_numexpr_mask_enum(
-                expression=self.serialized_query_params["expression"],
-                mask_enum=self.mask_enum,
-                whitelist=self.whitelist,
-                mask_value=self.serialized_query_params["nodata"],
-            )
 
         if self.clear_cache is True:
             headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
