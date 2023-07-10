@@ -164,7 +164,7 @@ class StatisticsPreValidation:
             url=self.serialized_query_params["url"],
             assets=assets_,
             titiler_endpoint=TITILER_ENDPOINT,
-            validate_individual_assets=True,
+            check_individual_asset_availability=True,
         )
 
         # Step 4: Validate the list of assets against the available assets

@@ -86,7 +86,7 @@ def is_asset_available(item_url: str, asset: str, stac_info_endpoint: str = STAC
 def validate_assets(
     assets: ArrayLike,
     asset_names: ArrayLike,
-    validate_individual_assets: bool = False,
+    check_individual_asset_availability: bool = False,
     url: str = None,
     stac_info_endpoint: str = STAC_INFO_ENDPOINT,
 ) -> List:
@@ -103,7 +103,7 @@ def validate_assets(
         stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
 
     Returns:
-        List: Valid assets; if validate_individual_assets is True, this includes only the valid assets.
+        List: Valid assets; if check_individual_asset_availability is True, this includes only the valid assets.
     """
     # TODO: Consider maintaining a list of available assets for each collection, and checking against that list; see
     # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
@@ -123,7 +123,7 @@ def validate_assets(
             "https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability."
         )
 
-    if validate_individual_assets:
+    if check_individual_asset_availability:
         item_url = url
         item = item_url.split("/")[-1]
         # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
