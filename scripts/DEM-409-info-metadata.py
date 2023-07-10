@@ -137,6 +137,7 @@ scene_info = Info(
     # assets=assets,
     assets=None,
     titiler_endpoint=TITILER_ENDPOINT,
+    check_individual_asset_availability=True,
 )
 
 # %% Check that invalid assets are removed from list:

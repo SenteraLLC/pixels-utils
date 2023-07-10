@@ -21,7 +21,7 @@ def sample_sceneid(data_id=1):
 
 
 def sample_scene_url(data_id=1):
-    return EARTHSEARCH_SCENE_URL.format(collection=EARTHSEARCH_URL, sceneid=sample_sceneid(data_id=1))
+    return EARTHSEARCH_SCENE_URL.format(collection=EARTHSEARCH_URL, id=sample_sceneid(data_id=1))
 
 
 def sample_feature(data_id=1):
