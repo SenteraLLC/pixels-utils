@@ -55,8 +55,18 @@ def to_pixel_dimensions(geojson: Any, height: int, width: int, gsd: Union[int, f
     return height, width
 
 
-# TODO: Can we do a general check on the passed assets by looping through them for the collection?
 def is_asset_available(item_url: str, asset: str, stac_info_endpoint: str = STAC_INFO_ENDPOINT) -> bool:
+    """
+    Checks whether the given asset is available for the given STAC item.
+
+    Args:
+        item_url (str): The STAC item URL.
+        asset (str): The asset name.
+        stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
+
+    Returns:
+        bool: Whether the asset is available for the given STAC item_url at the given STAC Info endpoint.
+    """
     query = {
         "url": item_url,
         "assets": (asset,),
@@ -86,7 +96,9 @@ def validate_assets(
     Args:
         assets (ArrayLike): Assets passed to the Info endpoint.
         asset_names (ArrayLike): Assets available for the STAC item.
-        validate_individual_assets (bool, optional): Whether to validate each asset individually. Defaults to False.
+        check_individual_asset_availability (bool, optional): Whether to individually check availability of assets (in
+        `url`). If True, loops through `assets` and runs `is_asset_available()` on each; if False, simply checks whether
+        `assets` is a subset of `asset_names`. Defaults to False.
         url (str, optional): The STAC item URL. Defaults to None.
         stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
 
