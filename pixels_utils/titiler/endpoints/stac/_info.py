@@ -100,7 +100,7 @@ class Info:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.url)
         query = {
             QUERY_URL: self.url,
-            QUERY_ASSETS: self.assets,
+            QUERY_ASSETS: self.assets_valid,
         }
         r = get(
             STAC_INFO_ENDPOINT,
