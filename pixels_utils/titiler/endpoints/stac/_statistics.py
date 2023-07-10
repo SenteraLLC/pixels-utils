@@ -138,18 +138,11 @@ class StatisticsPreValidation:
         if errors:
             raise ValidationError(errors)
 
-        # Step 1: Get valid assets for the URL (could also do after Step 3)
-        self.scene_info = Info(
-            url=self.serialized_query_params["url"],
-            titiler_endpoint=TITILER_ENDPOINT,
-            validate_individual_assets=True,
-        )
-
-        # Step 2: Extract the assets/expression from the query_params
+        # Step 1: Extract the assets/expression from the query_params
         assets, expression = [self.serialized_query_params.get(i, None) for i in ["assets", "expression"]]
         self.serialized_query_params["assets"] = [assets] if isinstance(assets, str) else assets
 
-        # Step 3: Get a list of assets from the assets or expression that was passed
+        # Step 2: Get a list of assets from the assets or expression that was passed
         # regex retrieves assets from expression, delimites by comma, and drops empty strings, leftover digits, and
         # duplicates; e.g.:
         # list(set([i for i in re.sub("\W+", ",", "nir/red").split(",") if not i.isdigit()]))  # ['nir', 'red']
@@ -168,12 +161,22 @@ class StatisticsPreValidation:
             else assets
         )
 
-        # Step 4: Validate the list of assets against the available assets
-        assert set(assets_).issubset(
-            set(self.scene_info.assets_valid)
-        ), f"The following assets are not available: {list(set(assets_) - set(self.scene_info.assets_valid))}"
+        # Step 3: Get valid assets for the URL, passing assets_ from Step 2 above
+        self.scene_info = Info(
+            url=self.serialized_query_params["url"],
+            assets=assets_,
+            titiler_endpoint=TITILER_ENDPOINT,
+            check_individual_asset_availability=True,
+        )
 
-        logging.info("StatisticsPreValidation passed: all required assets are available.")
+        # Step 4: Validate the list of assets against the available assets
+        if set(assets_).issubset(set(self.scene_info.assets_valid)):
+            logging.info("StatisticsPreValidation PASSED. All required assets are available.")
+        else:
+            raise ValidationError(
+                "StatisticsPreValidation FAILED. The following assets are not available: "
+                f"{list(set(assets_) - set(self.scene_info.assets_valid))}"
+            )
 
         # TODO: Consider doing other checks/exposing other info in this class, e.g.:
         # self.df_nodata = (

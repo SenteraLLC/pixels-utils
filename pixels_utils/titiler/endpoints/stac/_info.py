@@ -60,8 +60,10 @@ class Info:
         titiler_endpoint (str): The `https://myendpoint` part of the example URL above. Defaults to
         `https://pixels.sentera.com/stac/info`.
 
-        validate_individual_assets (bool): Whether to validate each asset individually during __init__(). Defaults to
-        True.
+        check_individual_asset_availability (bool): Whether to individually check availability of assets (in `url`)
+        during __init__(). If True, loops through `assets` and runs `is_asset_available()` on each; if False, simply
+        checks whether `assets` is a subset of `asset_names`. Defaults to False. Whether to validate each asset
+        individually during __init__(). Defaults to True.
     """
 
     def __init__(
@@ -69,7 +71,7 @@ class Info:
         url: str,
         assets: Tuple[str] = None,
         titiler_endpoint: str = TITILER_ENDPOINT,
-        validate_individual_assets: bool = True,
+        check_individual_asset_availability: bool = True,
     ):
         self.url = url
         self.assets = assets
@@ -78,7 +80,7 @@ class Info:
         self.assets_valid = validate_assets(
             assets=self.assets,
             asset_names=self.asset_metadata.asset_names,
-            validate_individual_assets=validate_individual_assets,
+            check_individual_asset_availability=check_individual_asset_availability,
             url=self.url,
             stac_info_endpoint=STAC_INFO_ENDPOINT,
         )
@@ -98,7 +100,7 @@ class Info:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.url)
         query = {
             QUERY_URL: self.url,
-            QUERY_ASSETS: self.assets,
+            QUERY_ASSETS: self.assets_valid,
         }
         r = get(
             STAC_INFO_ENDPOINT,

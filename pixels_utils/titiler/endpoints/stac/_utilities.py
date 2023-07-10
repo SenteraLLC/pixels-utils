@@ -55,8 +55,18 @@ def to_pixel_dimensions(geojson: Any, height: int, width: int, gsd: Union[int, f
     return height, width
 
 
-# TODO: Can we do a general check on the passed assets by looping through them for the collection?
 def is_asset_available(item_url: str, asset: str, stac_info_endpoint: str = STAC_INFO_ENDPOINT) -> bool:
+    """
+    Checks whether the given asset is available for the given STAC item.
+
+    Args:
+        item_url (str): The STAC item URL.
+        asset (str): The asset name.
+        stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
+
+    Returns:
+        bool: Whether the asset is available for the given STAC item_url at the given STAC Info endpoint.
+    """
     query = {
         "url": item_url,
         "assets": (asset,),
@@ -76,7 +86,7 @@ def is_asset_available(item_url: str, asset: str, stac_info_endpoint: str = STAC
 def validate_assets(
     assets: ArrayLike,
     asset_names: ArrayLike,
-    validate_individual_assets: bool = False,
+    check_individual_asset_availability: bool = False,
     url: str = None,
     stac_info_endpoint: str = STAC_INFO_ENDPOINT,
 ) -> List:
@@ -86,12 +96,14 @@ def validate_assets(
     Args:
         assets (ArrayLike): Assets passed to the Info endpoint.
         asset_names (ArrayLike): Assets available for the STAC item.
-        validate_individual_assets (bool, optional): Whether to validate each asset individually. Defaults to False.
+        check_individual_asset_availability (bool, optional): Whether to individually check availability of assets (in
+        `url`). If True, loops through `assets` and runs `is_asset_available()` on each; if False, simply checks whether
+        `assets` is a subset of `asset_names`. Defaults to False.
         url (str, optional): The STAC item URL. Defaults to None.
         stac_info_endpoint (str, optional): The STAC Info endpoint URL. Defaults to STAC_INFO_ENDPOINT.
 
     Returns:
-        List: Valid assets; if validate_individual_assets is True, this includes only the valid assets.
+        List: Valid assets; if check_individual_asset_availability is True, this includes only the valid assets.
     """
     # TODO: Consider maintaining a list of available assets for each collection, and checking against that list; see
     # https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
@@ -111,7 +123,7 @@ def validate_assets(
             "https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability."
         )
 
-    if validate_individual_assets:
+    if check_individual_asset_availability:
         item_url = url
         item = item_url.split("/")[-1]
         # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?

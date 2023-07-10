@@ -111,7 +111,6 @@ stats = Statistics(
 stats.response.url
 stats.response.json()
 
-
 # %% Explore the Expression class to retrive NDVI expression (adapted from spyndex)
 
 # sentinel_2_l2a_indices = expressions_from_collection(collection=EarthSearchCollections.sentinel_2_l2a)
@@ -217,3 +216,5 @@ stats = Statistics(
     titiler_endpoint=TITILER_ENDPOINT,
 )
 stats.response.json()
+
+# %%
