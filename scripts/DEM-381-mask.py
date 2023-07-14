@@ -1,6 +1,7 @@
 # %% Imports
 import logging
 
+import seaborn as sns
 from utils.logging.tqdm import logging_init
 
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
@@ -53,7 +54,7 @@ df_asset_info = request_asset_info(df=df_scenes)
 
 # %% Set STAC Statistics defaults
 # Choosing a scene with low cloud cover
-scene_idx = 4
+scene_idx = 2
 print(f"Scene {scene_idx} has {df_properties.iloc[scene_idx]['eo:cloud_cover']:.2f}% cloud cover")
 url = EARTHSEARCH_SCENE_URL.format(
     collection=df_scenes.iloc[scene_idx]["collection"], id=df_scenes.iloc[scene_idx]["id"]
@@ -107,7 +108,7 @@ stats_preval = StatisticsPreValidation(query_params, titiler_endpoint=TITILER_EN
 # If you get a message "StatisticsPreValidation passed: all required assets are available.", you can proceed to Statistics
 
 # %% Now actually request Statistics - for only arable pixels (whitelist=True)!
-stats_arable = Statistics(
+stats_arable_wlist = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=False,
     titiler_endpoint=TITILER_ENDPOINT,
@@ -116,25 +117,34 @@ stats_arable = Statistics(
     whitelist=True,
 )
 
-json_arable = stats_arable.response.json()
+json_arable_wlist = stats_arable_wlist.response.json()
 
 # %% And compare to statistics where all CLOUD pixels are masked, keeping only those with a mask over non-cloud pixels
 # (by changing the mask_enum and whitelist arg)
-stats_nonarable = Statistics(
+stats_arable_blist = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
-    clear_cache=False,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=Sentinel2_SCL_Group.CLOUDS,
     mask_asset="scl",
     whitelist=False,
 )
 
-json_nonarable = stats_nonarable.response.json()
+json_arable_blist = stats_arable_blist.response.json()
+
+# %% Get stats for all CLOUD pixels
+stats_cloud_wlist = Statistics(
+    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.CLOUDS,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+json_cloud_wlist = stats_cloud_wlist.response.json()
 
 # %% And finally, get statistics without a mask
 stats_all = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
-    clear_cache=False,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=None,
     mask_asset=None,
@@ -144,7 +154,7 @@ stats_all = Statistics(
 json_all = stats_all.response.json()
 
 # %% Print results
-for json_ in [json_arable, json_nonarable, json_all]:
+for json_ in [json_arable_wlist, json_arable_blist, json_cloud_wlist, json_all]:
     expression = list(json_["properties"]["statistics"].keys())[0]
     mean = json_["properties"]["statistics"][expression]["mean"]
     count = json_["properties"]["statistics"][expression]["count"]
@@ -152,27 +162,28 @@ for json_ in [json_arable, json_nonarable, json_all]:
     print(f"Pixel count: {count}")
     print(f"Mean NDVI: {mean:.2f}\n")
 
-# %% Get the count for each class in the Sentinel2_SCL enum
+# %% Get the count for each class in the Sentinel2_SCL enum via statistics histogram and plot
+sns.set_theme(style="ticks")
 
-query_params = QueryParamsStatistics(url=url, feature=feature, expression="scl", asset_as_band=asset_as_band, nodata=-1)
+query_params = QueryParamsStatistics(
+    url=url,
+    feature=feature,
+    assets=["scl"],
+    asset_as_band=asset_as_band,
+    histogram_range="0,12",
+    histogram_bins="12",
+)
 
-for scl in Sentinel2_SCL:
-    print(scl)
-    stats_class = Statistics(
-        query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
-        titiler_endpoint=TITILER_ENDPOINT,
-        mask_enum=[scl],
-        mask_asset="scl",
-        whitelist=True,
-    )
-    json_class = stats_class.response.json()
-    expression = list(json_class["properties"]["statistics"].keys())[0]
-    min = json_class["properties"]["statistics"][expression]["min"]
-    max = json_class["properties"]["statistics"][expression]["max"]
-    count = json_class["properties"]["statistics"][expression]["count"]
-    print(f"Class: {scl}")
-    print(f"Pixel min: {min}")
-    print(f"Pixel max: {max}")
-    print(f"Pixel count: {count}\n")
+data = Statistics(
+    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    titiler_endpoint=TITILER_ENDPOINT,
+).response.json()["properties"]["statistics"]["scl"]["histogram"]
+
+x = [int(x) for x in data[1][0:-1]]
+# x=[f"{n}: {n.name}" for n in Sentinel2_SCL]
+g = sns.histplot(x=x, weights=data[0], discrete=True, shrink=0.8, stat="count")
+g.set_title("Histogram of Sentinel2_SCL classes")
+g.set_ylabel("Pixel count")
+# g.set_xticklabels(g.get_xticklabels(), rotation=60)
 
 # %%
