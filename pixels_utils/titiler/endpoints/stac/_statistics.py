@@ -184,7 +184,6 @@ class StatisticsPreValidation:
         # )  # Should issue a warning if "nodata" not available for collection
 
 
-@memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Statistics:
     """
