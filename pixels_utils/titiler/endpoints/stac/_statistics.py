@@ -213,6 +213,7 @@ class Statistics:
         clear_cache: bool = False,
         titiler_endpoint: str = TITILER_ENDPOINT,
         mask_enum: List[Enum] = None,
+        mask_asset: str = None,
         whitelist: bool = True,
     ):
         self.query_params = query_params
@@ -223,6 +224,7 @@ class Statistics:
         self.clear_cache = clear_cache
         self.titiler_endpoint = titiler_endpoint
         self.mask_enum = mask_enum
+        self.mask_asset = mask_asset
         self.whitelist = whitelist
 
         errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
@@ -257,6 +259,10 @@ class Statistics:
                 mask_enum=self.mask_enum,
                 whitelist=self.whitelist,
                 mask_value=self.serialized_query_params["nodata"],
+                mask_asset=self.mask_asset,
+            )
+            self.serialized_query_params["nodata"] = (
+                0.0 if self.serialized_query_params["nodata"] is None else self.serialized_query_params["nodata"]
             )
         # self.geometry = shapely_to_geojson_geometry(geojson_to_shapely(self.query_params.feature))
         self.response
