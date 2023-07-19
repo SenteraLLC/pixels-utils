@@ -163,6 +163,7 @@ stats_arable_wlist.response.json()
 
 <h5 a><code>[OUTPUT]</code></h5>
 
+```python
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "red".
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "nir".
 root - INFO - StatisticsPreValidation PASSED. All required assets are available.
@@ -190,3 +191,4 @@ root - INFO - Adding masking parameters to `expression`.
     'valid_pixels': 1021.0,
     'percentile_98': 0.16414680642034107,
     'percentile_2': 0.11589278323054499}}}}
+```
