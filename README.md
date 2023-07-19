@@ -67,8 +67,7 @@ if __name__ == "__main__":
 ## Usage Example
 
 ### Example 1 - Find all the scenes available for a geometry within a date range
-
-<h5 a><strong><code>pixels_utils_scene_search.py</code></strong></h5>
+[scripts/scene_search.py](https://github.com/SenteraLLC/pixels-utils/blob/main/scripts/scene_search.py)
 
 ```python
 from pixels_utils.tests.data.load_data import sample_feature
@@ -88,10 +87,19 @@ df_scenes = search_stac_scenes(
     simplify_to_bbox=True,
 )
 
-print(df_scenes[["id"]].merge(parse_nested_stac_data(df=df_scenes, column="properties")[["datetime", "eo:cloud_cover"]], left_index=True, right_index=True).to_markdown(tablefmt="pipe"))
+print(
+    df_scenes[["id"]]
+    .merge(
+        parse_nested_stac_data(df=df_scenes, column="properties")[["datetime", "eo:cloud_cover"]],
+        left_index=True,
+        right_index=True,
+    )
+    .to_markdown(tablefmt="pipe")
+)
 ```
 
 <h5 a><code>[OUTPUT]</code></h5>
+
 |    | id                       | datetime                    |   eo:cloud_cover |
 |---:|:-------------------------|:----------------------------|-----------------:|
 |  0 | S2A_11TLM_20190110_0_L2A | 2019-01-10T19:01:30.135000Z |          26.9409 |
@@ -99,15 +107,14 @@ print(df_scenes[["id"]].merge(parse_nested_stac_data(df=df_scenes, column="prope
 |  2 | S2B_10TGS_20190125_0_L2A | 2019-01-25T19:01:37.534000Z |          55.6444 |
 
 ### Example 2 - Get cloud-masked statistics for a geometry
-
-<h5 a><strong><code>pixels_utils_statistics_geojson.py</code></strong></h5>
+[scripts/statistics.py](https://github.com/SenteraLLC/pixels-utils/blob/main/scripts/statistics.py)
 
 ``` python
 from pixels_utils.stac_catalogs.earthsearch.v1 import expression_from_collection, EarthSearchCollections
 from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
 from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics, StatisticsPreValidation
-from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL, Sentinel2_SCL_Group
+from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL_Group
 
 DATA_ID = 1
 
@@ -155,6 +162,7 @@ stats_arable_wlist.response.json()
 ```
 
 <h5 a><code>[OUTPUT]</code></h5>
+
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "red".
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "nir".
 root - INFO - StatisticsPreValidation PASSED. All required assets are available.
