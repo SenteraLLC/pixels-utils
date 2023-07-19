@@ -58,6 +58,7 @@ def build_numexpr_mask_enum(
     Args:
         expression (str): The expression to be built into a NumExpr where clause.
         mask_enum (List[Enum]): The list of pixel values to be masked out.
+        mask_asset (str, optional): The asset to be masked. Defaults to "scl".
         whitelist (bool, optional): Whether scene classifications are built via a whitelist or blacklist.
         `whitelist=True` indicates that all pixels that match the `mask_enum` values will be kept, whereas
         `whitelist=False` indicates that all pixels that match the `mask_enum` values will be masked out.
@@ -71,13 +72,13 @@ def build_numexpr_mask_enum(
     mask_value = 0.0 if mask_value is None else mask_value
 
     expression = [expression] if isinstance(expression, str) else expression
-    if whitelist is True:
+    if whitelist is True:  # whitelist - {expr} is part of the assignment
         #
         assignment = ((class_enum, "{expr}") for class_enum in mask_enum)
         numexpr_str_template = "{0};".format(
             _build_mask_by_assignment(assignment, else_value=mask_value, mask_asset="{mask_asset}")
         )
-    else:  # blacklist
+    else:  # blacklist - {expr} is the `else_value`
         assignment = ((class_enum, mask_value) for class_enum in mask_enum)
         numexpr_str_template = "{0};".format(
             _build_mask_by_assignment(assignment, else_value="{expr}", mask_asset="{mask_asset}")
