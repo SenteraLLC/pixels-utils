@@ -1,6 +1,16 @@
+import logging
+
+from utils.logging.tqdm import logging_init
+
 from pixels_utils.scenes import parse_nested_stac_data, search_stac_scenes
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 from pixels_utils.tests.data.load_data import sample_feature
+
+logging_init(
+    level=logging.INFO,
+    format_string="%(name)s - %(levelname)s - %(message)s",
+    style="%",
+)
 
 if __name__ == "__main__":
     DATA_ID = 1
@@ -14,6 +24,7 @@ if __name__ == "__main__":
         query={"eo:cloud_cover": {"lt": 80}},  # keeps less than 80% cloud cover,
         simplify_to_bbox=True,
     )
+    logging.info("Found %s scenes", len(df_scenes))
 
     print(
         df_scenes[["id"]]

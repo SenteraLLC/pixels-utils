@@ -1,8 +1,19 @@
+import logging
+from pprint import pprint
+
+from utils.logging.tqdm import logging_init
+
 from pixels_utils.stac_catalogs.earthsearch.v1 import EarthSearchCollections, expression_from_collection
 from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
 from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics, StatisticsPreValidation
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL_Group
+
+logging_init(
+    level=logging.INFO,
+    format_string="%(name)s - %(levelname)s - %(message)s",
+    style="%",
+)
 
 if __name__ == "__main__":
     DATA_ID = 1
@@ -48,4 +59,4 @@ if __name__ == "__main__":
         whitelist=True,
     )
 
-    stats_arable_wlist.response.json()
+    pprint(stats_arable_wlist.response.json())

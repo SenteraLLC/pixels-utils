@@ -3,7 +3,7 @@ from os import chdir
 from os.path import abspath
 from pathlib import Path
 
-from geo_utils.vector._convert import validate_geojson, validate_geojson_geometry
+from geo_utils.vector import validate_geojson, validate_geojson_geometry
 
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_SCENE_URL, EARTHSEARCH_URL, EarthSearchCollections
 
