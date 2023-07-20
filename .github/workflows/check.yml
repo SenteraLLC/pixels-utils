@@ -20,11 +20,12 @@ jobs:
         with:
           version: latest
 
+      - name: Install pytest and pre-commit
+        run: python -m pip install pytest pre-commit
+
       - name: Pre-Commit
         run: poetry run pre-commit run --show-diff-on-failure --color=always --all-files
 
-    #   - name: Install pytest and pre-commit
-    #     run: python -m pip install pytest pre-commit
 
   test:
     needs: linting
