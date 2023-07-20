@@ -110,7 +110,7 @@ stats_preval = StatisticsPreValidation(query_params, titiler_endpoint=TITILER_EN
 # %% Now actually request Statistics - for only arable pixels (whitelist=True)!
 stats_arable_wlist = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
-    clear_cache=False,
+    clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=Sentinel2_SCL_Group.ARABLE,
     mask_asset="scl",
@@ -123,6 +123,7 @@ json_arable_wlist = stats_arable_wlist.response.json()
 # (by changing the mask_enum and whitelist arg)
 stats_arable_blist = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=Sentinel2_SCL_Group.CLOUDS,
     mask_asset="scl",
@@ -134,6 +135,7 @@ json_arable_blist = stats_arable_blist.response.json()
 # %% Get stats for all CLOUD pixels
 stats_cloud_wlist = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=Sentinel2_SCL_Group.CLOUDS,
     mask_asset="scl",
@@ -142,9 +144,22 @@ stats_cloud_wlist = Statistics(
 
 json_cloud_wlist = stats_cloud_wlist.response.json()
 
+# %% Get stats for NO_DATA pixels (to demonstrate mask_enum=Sentinel2_SCL.NO_DATA)
+stats_nodata = Statistics(
+    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL.NO_DATA,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+json_nodata = stats_nodata.response.json()
+
 # %% And finally, get statistics without a mask
 stats_all = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=None,
     mask_asset=None,
@@ -176,6 +191,7 @@ query_params = QueryParamsStatistics(
 
 data = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
 ).response.json()["properties"]["statistics"]["scl"]["histogram"]
 
