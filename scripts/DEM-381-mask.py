@@ -149,7 +149,7 @@ stats_nodata = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
-    mask_enum=Sentinel2_SCL.NO_DATA,
+    mask_enum=[Sentinel2_SCL.NO_DATA],
     mask_asset="scl",
     whitelist=True,
 )
@@ -180,9 +180,26 @@ for json_ in [json_arable_wlist, json_arable_blist, json_cloud_wlist, json_all]:
 # %% Get the count for each class in the Sentinel2_SCL enum via statistics histogram and plot
 sns.set_theme(style="ticks")
 
-query_params = QueryParamsStatistics(
+feature_square = {
+    "type": "Feature",
+    "properties": {},
+    "geometry": {
+        "coordinates": [
+            [
+                [-119.05366, 46.24789],
+                [-119.05366, 46.22802],
+                [-119.02878, 46.22802],
+                [-119.02878, 46.24789],
+                [-119.05366, 46.24789],
+            ]
+        ],
+        "type": "Polygon",
+    },
+}
+
+query_params_square = QueryParamsStatistics(
     url=url,
-    feature=feature,
+    feature=feature_square,
     assets=["scl"],
     asset_as_band=asset_as_band,
     histogram_range="0,12",
@@ -190,7 +207,7 @@ query_params = QueryParamsStatistics(
 )
 
 data = Statistics(
-    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    query_params=query_params_square,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
 ).response.json()["properties"]["statistics"]["scl"]["histogram"]
@@ -201,5 +218,60 @@ g = sns.histplot(x=x, weights=data[0], discrete=True, shrink=0.8, stat="count")
 g.set_title("Histogram of Sentinel2_SCL classes")
 g.set_ylabel("Pixel count")
 # g.set_xticklabels(g.get_xticklabels(), rotation=60)
+
+# %%  Compare valid_percent, masked_pixels, and valid_pixels for different masks
+query_params_square = QueryParamsStatistics(
+    url=url,
+    feature=feature_square,
+    expression=collection_ndvi.expression,
+    asset_as_band=asset_as_band,
+)
+
+stats_arable = Statistics(
+    query_params=query_params_square,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=True,
+).response.json()["properties"]["statistics"]
+
+stats_soil = Statistics(
+    query_params=query_params_square,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=[Sentinel2_SCL.BARE_SOIL],
+    mask_asset="scl",
+    whitelist=True,
+).response.json()["properties"]["statistics"]
+
+stats_vegetation = Statistics(
+    query_params=query_params_square,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=[Sentinel2_SCL.VEGETATION],
+    mask_asset="scl",
+    whitelist=True,
+).response.json()["properties"]["statistics"]
+
+stats_all = Statistics(
+    query_params=query_params_square,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+).response.json()["properties"]["statistics"]
+
+for name, my_stats in zip(
+    ["Arable", "Soil", "Vegetation", "All"], [stats_arable, stats_soil, stats_vegetation, stats_all]
+):
+    key = list(my_stats.keys())[0]
+    stats = my_stats[key]
+    print(
+        f"Subset: {name}\n",
+        f"Valid percent: {stats['valid_percent']}\n",
+        f"Masked pixels: {stats['masked_pixels']}\n",
+        f"Valid pixels: {stats['valid_pixels']}\n",
+        f"Mean pixel value: {stats['mean']:.3f}\n",
+    )
 
 # %%
