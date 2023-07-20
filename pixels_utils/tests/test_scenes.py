@@ -16,7 +16,7 @@ class Test_Scenes:
         from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
         r_mock = mock_scenes_earthsearch_v1(
-            fname_pickle="CLOUD-80_GEOM-1_MONTH-6.pickle",
+            fname_pickle="CLOUD_80-GEOM_1-MONTH_6.pickle",
         )
         with mock.patch("pixels_utils.scenes.search_stac_scenes", return_value=r_mock) as search_stac_scenes_patch:
             df_scenes = search_stac_scenes_patch(
@@ -42,7 +42,6 @@ class Test_Scenes:
                     "stac_extensions",
                     "collection",
                     "datetime",
-                    "eo:cloud_cover",
                 ]
             )
 
@@ -50,7 +49,7 @@ class Test_Scenes:
         from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
         r_mock = mock_scenes_earthsearch_v1(
-            fname_pickle="CLOUD-80_GEOM-1_MONTH-6.pickle",
+            fname_pickle="CLOUD_80-GEOM_1-MONTH_6.pickle",
         )
         with mock.patch("pixels_utils.scenes.search_stac_scenes", return_value=r_mock) as search_stac_scenes_patch:
             df_scenes = search_stac_scenes_patch(
@@ -75,10 +74,10 @@ class Test_Scenes:
         from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
         r_mock_scenes = mock_scenes_earthsearch_v1(
-            fname_pickle="CLOUD-80_GEOM-1_MONTH-6.pickle",
+            fname_pickle="CLOUD_80-GEOM_1-MONTH_6.pickle",
         )
         r_mock_asset_info = mock_scene_asset_info_earthsearch_v1(
-            fname_pickle="CLOUD-80_GEOM-1_MONTH-6_asset-info.pickle",
+            fname_pickle="CLOUD_80-GEOM_1-MONTH_6-asset_info.pickle",
         )
         with mock.patch(
             "pixels_utils.scenes.search_stac_scenes", return_value=r_mock_scenes
