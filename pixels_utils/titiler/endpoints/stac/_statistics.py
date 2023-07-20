@@ -281,10 +281,7 @@ class Statistics:
         # query = generate_base_query(**self.serialized_query_params)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
 
-        if self.clear_cache is True:
-            headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
-        else:
-            headers = {}
+        headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"} if self.clear_cache is True else {}
 
         if self.query_params.feature is None:
             logging.debug(
