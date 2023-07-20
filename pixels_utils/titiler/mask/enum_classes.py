@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 
 
-class Sentinel2_SCL(IntEnum):
+class Sentinel2_SCL(IntEnum):  # noqa: N801
     """Sentinel-2 L2A Scene Classification classes.
 
     From https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-2-msi/level-2a/algorithm
@@ -23,7 +23,7 @@ class Sentinel2_SCL(IntEnum):
 
 
 @dataclass
-class Sentinel2_SCL_Group:
+class Sentinel2_SCL_Group:  # noqa: N801
     """Sentinel-2 L2A Scene Classification groups."""
 
     ARABLE = [Sentinel2_SCL.VEGETATION, Sentinel2_SCL.BARE_SOIL]
