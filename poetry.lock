@@ -4257,25 +4257,23 @@ files = [
 
 [[package]]
 name = "spyndex"
-version = "0.4.0"
+version = "0.5.0"
 description = "Awesome Spectral Indices in Python"
 optional = false
 python-versions = "*"
 files = [
-    {file = "spyndex-0.4.0.tar.gz", hash = "sha256:80cb3f3ed43abbdd0c67d9952131ba278daee5b000da5295839b72f8067e01c0"},
+    {file = "spyndex-0.5.0.tar.gz", hash = "sha256:c5d697a84c191e81b2e754c1eac6ca85c636295f1f97f9cf6ac916ef2cad1c6d"},
 ]
 
 [package.dependencies]
-dask = ">=2021.9.1"
-earthengine-api = "*"
+dask = ">=2023.7.0"
 eemont = ">=0.3.6"
 matplotlib = "*"
-numpy = "*"
-pandas = "*"
+pandas = ">=2.0.3"
 python-box = ">=6.0"
 requests = "*"
 seaborn = "*"
-xarray = "*"
+xarray = ">=2023.6.0"
 
 [[package]]
 name = "stack-data"
@@ -4946,4 +4944,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "ce4c0260639538631dc61d8c76fd733fa5c7f9804e225af86b8804e0f83ad5c4"
+content-hash = "fd32ac17d0fc32bdd887139866a0da3042d21d343eaf9afbb1d2033270357c29"
