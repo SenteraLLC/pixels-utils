@@ -41,7 +41,7 @@ class QueryParamsStatistics:
     expression: str = None
     asset_as_band: bool = None
     asset_bidx: List[str] = None
-    coord_crs: str = None  # CRS.from_epsg(4326).to_string()  # TODO: How to pass as a CRS type?
+    coord_crs: str = None  # CRS.from_epsg(4326).to_string()
     max_size: int = None
     height: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
     width: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
@@ -246,7 +246,6 @@ class Statistics:
         )
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
-        # TODO: Consider mask_enum and whitelist, adjusting assets and/or expression accordingly
         # Note: Assets do not do not accept numexpr functions
         if self.mask_enum is not None and self.serialized_query_params["assets"] is not None:
             logging.warning(
