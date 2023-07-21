@@ -91,8 +91,8 @@ class Test_Titiler_Endpoint_Stac_Statistics_Expression_NDVI:
             expression = list(r.json()["properties"]["statistics"].keys())[0]
             stats = r.json()["properties"]["statistics"][expression]
 
-            list(stats.keys()).should.equal(
-                [
+            set(stats.keys()).should.equal(
+                {
                     "min",
                     "max",
                     "mean",
@@ -109,7 +109,7 @@ class Test_Titiler_Endpoint_Stac_Statistics_Expression_NDVI:
                     "valid_pixels",
                     "percentile_2",
                     "percentile_98",
-                ]
+                }
             )
             stats["valid_percent"].should.equal(43.38, epsilon=0.01)
             stats["masked_pixels"].should.equal(1420)
