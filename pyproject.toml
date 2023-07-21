@@ -21,10 +21,8 @@ marshmallow = "^3.19.0"
 marshmallow-dataclass = "^8.5.14"
 typeguard = "^4.0.0"
 spyndex = "^0.5.0"
-gql_utils = {git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch="main"}
 geo_utils = {git = "ssh://git@github.com/SenteraLLC/py-geo-utils.git", branch="main"}
 utils = {git = "ssh://git@github.com/SenteraLLC/py-utils.git", branch="master"}
-python-magic = "^0.4.27"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
