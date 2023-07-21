@@ -1,4 +1,11 @@
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
+from pixels_utils.titiler.endpoints.stac._crop import (
+    STAC_CROP_ENDPOINT,
+    Crop,
+    CropPreValidation,
+    QueryParamsCrop,
+    STAC_crop,
+)
 from pixels_utils.titiler.endpoints.stac._info import STAC_INFO_ENDPOINT, Info, QueryParamsInfo, STAC_info
 from pixels_utils.titiler.endpoints.stac._statistics import (
     STAC_STATISTICS_ENDPOINT,
@@ -15,6 +22,11 @@ from pixels_utils.titiler.endpoints.stac._utilities import (  # _check_asset_mai
 
 __all__ = [
     "online_status_stac",
+    "STAC_CROP_ENDPOINT",
+    "QueryParamsCrop",
+    "STAC_crop",
+    "Crop",
+    "CropPreValidation",
     "Info",
     "QueryParamsInfo",
     "STAC_info",
