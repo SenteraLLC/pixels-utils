@@ -13,8 +13,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          # python-version: "3.10"  # Uses .python-version file in repo root
-          cache: "poetry"
+          python-version-file: '.python-version' # Read python version from a file .python-version
+          cache: 'poetry'
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -37,8 +37,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          # python-version: "3.10"  # Uses .python-version file in repo root
-          cache: "poetry"
+          python-version-file: '.python-version' # Read python version from a file .python-version
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
