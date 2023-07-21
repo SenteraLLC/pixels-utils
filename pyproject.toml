@@ -26,10 +26,10 @@ utils = {git = "ssh://git@github.com/SenteraLLC/py-utils.git", branch="master"}
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
+sure = "^2.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "*"
-sure = "^2.0"
 flake8 = "^4.0"
 black = {version = "^22.6", allow-prereleases = true}
 ipywidgets = "^7.7"
