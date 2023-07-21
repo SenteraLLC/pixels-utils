@@ -45,9 +45,13 @@ jobs:
 
     #   - name: Install pytest
     #     run: python -m pip install pytest
+      - name: Register SSH key(s) for private dependencies
+        # Make sure the @v0.8.0 matches the current version of the action
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install dependencies
-        # if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
       - name: Install project

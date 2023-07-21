@@ -9,7 +9,6 @@ from pixels_utils.stac_catalogs.earthsearch.v1 import (
     expression_from_collection,
 )
 from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
-from pixels_utils.tests.data.utilities_testing import calculate_valid_pix_pct
 from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics, StatisticsPreValidation
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL, Sentinel2_SCL_Group
