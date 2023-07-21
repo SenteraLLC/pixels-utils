@@ -21,8 +21,7 @@ jobs:
           version: latest
 
       - name: Install pre-commit
-      # run: python -m pip install pre-commit
-        run: poetry add pre-commit
+        run: python -m pip install pre-commit
 
       - name: Pre-Commit
         run: poetry run pre-commit run --show-diff-on-failure --color=always --all-files
@@ -50,10 +49,10 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root --without dev
+        run: poetry install --no-interaction --no-root --with test
 
       - name: Install project
-        run: poetry install --no-interaction --without dev
+        run: poetry install --no-interaction --only-root
 
       - name: Run tests
         run: poetry run pytest
