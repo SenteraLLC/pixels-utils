@@ -45,11 +45,16 @@ jobs:
 
     #   - name: Install pytest
     #     run: python -m pip install pytest
-      - name: Register SSH key(s) for private dependencies
-        # Make sure the @v0.8.0 matches the current version of the action
+      # - name: Register SSH key(s) for private dependencies
+      #   # Make sure the @v0.8.0 matches the current version of the action
+      #   uses: webfactory/ssh-agent@v0.8.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Register SenteraLLC Secret token for private dependencies
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+         ssh-private-key: ${{ secrets.GHA_PRIVATE_REPOSITORIES }}
 
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
