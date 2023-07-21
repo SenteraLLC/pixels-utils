@@ -143,7 +143,7 @@ stats_arable_wlist = Statistics(
     whitelist=True,
 )
 
-stats_arable_blist = Statistics(
+stats_cloud_blist = Statistics(
     query_params=query_params,
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
@@ -188,8 +188,8 @@ EXPRESSION_DIR.mkdir(parents=True, exist_ok=True)
 
 
 for stats, name in zip(
-    [stats_all, stats_arable_wlist, stats_arable_blist, stats_cloud_wlist, stats_nodata],
-    ["stats_all", "stats_arable_wlist", "stats_arable_blist", "stats_cloud_wlist", "stats_nodata"],
+    [stats_all, stats_arable_wlist, stats_cloud_blist, stats_cloud_wlist, stats_nodata],
+    ["stats_all", "stats_arable_wlist", "stats_cloud_blist", "stats_cloud_wlist", "stats_nodata"],
 ):
     with open(
         os_join(

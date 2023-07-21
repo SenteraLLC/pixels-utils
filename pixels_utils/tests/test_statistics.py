@@ -21,7 +21,7 @@ def calculate_valid_pix_pct(stats_ndvi):
     return valid_pix_pct
 
 
-class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
+class Test_Titiler_Endpoint_Stac_Statistics_Expression_NDVI:
     DATA_ID = 1
 
     FEATURE = sample_feature(DATA_ID)
@@ -88,7 +88,6 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             r.should.be.a(Response)
             list(r.json().keys()).should.equal(["type", "geometry", "properties"])
 
-            data = r.json()["properties"]["statistics"]
             expression = list(r.json()["properties"]["statistics"].keys())[0]
             stats = r.json()["properties"]["statistics"][expression]
 
@@ -116,5 +115,117 @@ class Test_Endpoint_Stac_Statistics_ASSETS_None_EXPRESSION_NDVI_GSD_20:
             stats["masked_pixels"].should.equal(1420)
             stats["valid_pixels"].should.equal(1088)
             stats["mean"].should.equal(0.1436, epsilon=0.001)
+            stats["count"].should.equal(stats["valid_pixels"])
+            calculate_valid_pix_pct(stats).should.equal(stats["valid_percent"], epsilon=0.01)
+
+    def test_stats_arable_wlist(self, mock_statistics_earthsearch_v1):
+        name = "STATS_ARABLE_WLIST"
+        r_mock = mock_statistics_earthsearch_v1(self.DATA_ID, name)
+
+        with mock.patch(
+            "pixels_utils.titiler.endpoints.stac.Statistics.response", return_value=r_mock
+        ) as statistics_patch:
+            r = statistics_patch(
+                query_params=self.QUERY_PARAMS,
+                clear_cache=True,
+                titiler_endpoint=TITILER_ENDPOINT,
+                mask_enum=Sentinel2_SCL_Group.ARABLE,
+                mask_asset="scl",
+                whitelist=True,
+            )
+            r.should.be.a(Response)
+            list(r.json().keys()).should.equal(["type", "geometry", "properties"])
+
+            expression = list(r.json()["properties"]["statistics"].keys())[0]
+            stats = r.json()["properties"]["statistics"][expression]
+
+            stats["valid_percent"].should.equal(40.71, epsilon=0.01)
+            stats["masked_pixels"].should.equal(1487)
+            stats["valid_pixels"].should.equal(1021)
+            stats["mean"].should.equal(0.1438, epsilon=0.001)
+            stats["count"].should.equal(stats["valid_pixels"])
+            calculate_valid_pix_pct(stats).should.equal(stats["valid_percent"], epsilon=0.01)
+
+    def test_stats_cloud_blist(self, mock_statistics_earthsearch_v1):
+        name = "STATS_CLOUD_BLIST"
+        r_mock = mock_statistics_earthsearch_v1(self.DATA_ID, name)
+
+        with mock.patch(
+            "pixels_utils.titiler.endpoints.stac.Statistics.response", return_value=r_mock
+        ) as statistics_patch:
+            r = statistics_patch(
+                query_params=self.QUERY_PARAMS,
+                clear_cache=True,
+                titiler_endpoint=TITILER_ENDPOINT,
+                mask_enum=Sentinel2_SCL_Group.CLOUDS,
+                mask_asset="scl",
+                whitelist=False,
+            )
+            r.should.be.a(Response)
+            list(r.json().keys()).should.equal(["type", "geometry", "properties"])
+
+            expression = list(r.json()["properties"]["statistics"].keys())[0]
+            stats = r.json()["properties"]["statistics"][expression]
+
+            stats["valid_percent"].should.equal(40.71, epsilon=0.01)
+            stats["masked_pixels"].should.equal(1487)
+            stats["valid_pixels"].should.equal(1021)
+            stats["mean"].should.equal(0.1438, epsilon=0.001)
+            stats["count"].should.equal(stats["valid_pixels"])
+            calculate_valid_pix_pct(stats).should.equal(stats["valid_percent"], epsilon=0.01)
+
+    def test_stats_cloud_wlist(self, mock_statistics_earthsearch_v1):
+        name = "STATS_CLOUD_WLIST"
+        r_mock = mock_statistics_earthsearch_v1(self.DATA_ID, name)
+
+        with mock.patch(
+            "pixels_utils.titiler.endpoints.stac.Statistics.response", return_value=r_mock
+        ) as statistics_patch:
+            r = statistics_patch(
+                query_params=self.QUERY_PARAMS,
+                clear_cache=True,
+                titiler_endpoint=TITILER_ENDPOINT,
+                mask_enum=Sentinel2_SCL_Group.CLOUDS,
+                mask_asset="scl",
+                whitelist=False,
+            )
+            r.should.be.a(Response)
+            list(r.json().keys()).should.equal(["type", "geometry", "properties"])
+
+            expression = list(r.json()["properties"]["statistics"].keys())[0]
+            stats = r.json()["properties"]["statistics"][expression]
+
+            stats["valid_percent"].should.equal(40.71, epsilon=0.01)
+            stats["masked_pixels"].should.equal(1487)
+            stats["valid_pixels"].should.equal(1021)
+            stats["mean"].should.equal(0.0, epsilon=0.001)  # probably zero pixels left after masking
+            stats["count"].should.equal(stats["valid_pixels"])
+            calculate_valid_pix_pct(stats).should.equal(stats["valid_percent"], epsilon=0.01)
+
+    def test_stats_nodata(self, mock_statistics_earthsearch_v1):
+        name = "STATS_NODATA"
+        r_mock = mock_statistics_earthsearch_v1(self.DATA_ID, name)
+
+        with mock.patch(
+            "pixels_utils.titiler.endpoints.stac.Statistics.response", return_value=r_mock
+        ) as statistics_patch:
+            r = statistics_patch(
+                query_params=self.QUERY_PARAMS,
+                clear_cache=True,
+                titiler_endpoint=TITILER_ENDPOINT,
+                mask_enum=[Sentinel2_SCL.NO_DATA],
+                mask_asset="scl",
+                whitelist=True,
+            )
+            r.should.be.a(Response)
+            list(r.json().keys()).should.equal(["type", "geometry", "properties"])
+
+            expression = list(r.json()["properties"]["statistics"].keys())[0]
+            stats = r.json()["properties"]["statistics"][expression]
+
+            stats["valid_percent"].should.equal(40.71, epsilon=0.01)
+            stats["masked_pixels"].should.equal(1487)
+            stats["valid_pixels"].should.equal(1021)
+            stats["mean"].should.equal(0.0, epsilon=0.001)
             stats["count"].should.equal(stats["valid_pixels"])
             calculate_valid_pix_pct(stats).should.equal(stats["valid_percent"], epsilon=0.01)
