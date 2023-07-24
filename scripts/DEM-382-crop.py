@@ -1,15 +1,20 @@
 # %% Imports
 import logging
+from os import getenv
+from os.path import join
+from pathlib import Path
 
-from rasterio import Env
-from rasterio.io import MemoryFile
+from dotenv import load_dotenv
+from numpy import float32
 from utils.logging.tqdm import logging_init
 
+from pixels_utils.rasterio_helper import save_image
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
 from pixels_utils.stac_catalogs.earthsearch.v1 import expression_from_collection
 from pixels_utils.tests.data.load_data import sample_feature
 from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Crop, CropPreValidation, QueryParamsCrop
+from pixels_utils.titiler.endpoints.stac._crop_response_utils import parse_crop_response
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL, Sentinel2_SCL_Group  # noqa
 
 logging_init(
@@ -17,10 +22,13 @@ logging_init(
     format_string="%(name)s - %(levelname)s - %(message)s",
     style="%",
 )
+c = load_dotenv()
 
 # %% Settings
 DATA_ID = 1
 EARTHSEARCH_VER = "v1"  # "v0" or "v1"
+
+temp_dir = getenv("TEMP_DIR")
 
 feature = sample_feature(DATA_ID)
 date_start = "2022-06-01"  # planting date
@@ -57,9 +65,8 @@ df_asset_info = request_asset_info(df=df_scenes)
 # Choosing a scene with low cloud cover
 scene_idx = 2
 print(f"Scene {scene_idx} has {df_properties.iloc[scene_idx]['eo:cloud_cover']:.2f}% cloud cover")
-url = EARTHSEARCH_SCENE_URL.format(
-    collection=df_scenes.iloc[scene_idx]["collection"], id=df_scenes.iloc[scene_idx]["id"]
-)
+scene_id = df_scenes.iloc[scene_idx]["id"]
+url = EARTHSEARCH_SCENE_URL.format(collection=df_scenes.iloc[scene_idx]["collection"], id=scene_id)
 
 height = None
 width = None
@@ -283,9 +290,9 @@ query_params_6 = QueryParamsCrop(
     asset_as_band=asset_as_band,
 )
 
-crop_preval = CropPreValidation(query_params_5, titiler_endpoint=TITILER_ENDPOINT)
+crop_preval = CropPreValidation(query_params_6, titiler_endpoint=TITILER_ENDPOINT)
 
-# %% 6a. Request Crop data and open as geotiff
+# %% 6a. Request Crop data and save as geotiff
 crop_6a = Crop(
     query_params=query_params_6,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
@@ -297,13 +304,18 @@ r = crop_6a.response
 print(f"Response status code: {r.status_code}")
 print(f"Response size: {len(r.content)} bytes")
 
-with Env(), MemoryFile(r.content) as m:
-    ds = m.open()
-    data = ds.read(masked=False)
-    profile = ds.profile
-    tags = ds.tags()
+data_mask, profile_mask, tags = parse_crop_response(
+    r=r,
+    **{"dtype": float32, "band_names": [collection_ndvi.short_name], "band_description": [collection_ndvi.short_name]},
+)
 
-
-# json_arable_wlist = crop_arable_wlist.response.json()
+save_image(
+    array=data_mask,
+    profile=profile_mask,
+    fname_out=Path(join(temp_dir, f"ndvi-{scene_id}.tif")),
+    driver="Gtiff",
+    interleave=None,
+    keep_xml=False,
+)
 
 # %%
