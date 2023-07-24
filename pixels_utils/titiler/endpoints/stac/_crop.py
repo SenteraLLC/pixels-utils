@@ -25,8 +25,8 @@ from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 STAC_crop = NewType("STAC_crop", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 STAC_CROP_ENDPOINT = f"{STAC_ENDPOINT}/crop"
-STAC_CROP_URL_GET = "{crop_endpoint}/{minx},{miny},{maxx},{maxy}/{width_height}{format_}"
-STAC_CROP_URL_POST = "{crop_endpoint}/{width_height}{format_}"
+STAC_CROP_URL_GET = "{crop_endpoint}{minx}{miny}{maxx}{maxy}{width_height}{format_}"
+STAC_CROP_URL_POST = "{crop_endpoint}{width_height}{format_}"
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
 memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done manually)
@@ -286,14 +286,10 @@ class Crop:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.query_params.url)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
         headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"} if self.clear_cache is True else {}
+        feature = query.pop("feature", None)
         width = query.pop("width", None)
         height = query.pop("height", None)
         format_ = query.pop("format_", "")
-        crop_preval = CropPreValidation(self.query_params, titiler_endpoint=TITILER_ENDPOINT)
-        asset_info = crop_preval.scene_info.to_dataframe().iloc[0]
-        minx, miny, maxx, maxy = asset_info["bounds"]
-        width = asset_info["width"] if width is None else width
-        height = asset_info["height"] if height is None else height
         width_height = f"/{width}x{height}" if width is not None and height is not None else ""
 
         if self.query_params.feature is None:
@@ -303,14 +299,17 @@ class Crop:
                 query,
                 headers,
             )
+            crop_preval = CropPreValidation(self.query_params, titiler_endpoint=TITILER_ENDPOINT)
+            asset_info = crop_preval.scene_info.to_dataframe().iloc[0]
+            minx, miny = round_coordinate((asset_info["bounds"][0], asset_info["bounds"][1]), n_decimal_places=6)
+            maxx, maxy = round_coordinate((asset_info["bounds"][2], asset_info["bounds"][3]), n_decimal_places=6)
             stac_crop_url_get = STAC_CROP_URL_GET.format(
                 crop_endpoint=STAC_CROP_ENDPOINT,
-                minx=round_coordinate(minx, n_decimal_places=6)[0],
-                miny=round_coordinate(miny, n_decimal_places=6)[0],
-                maxx=round_coordinate(maxx, n_decimal_places=6)[0],
-                maxy=round_coordinate(maxy, n_decimal_places=6)[0],
-                width=width,
-                height=height,
+                minx=f"/{minx}",
+                miny=f",{miny}",
+                maxx=f",{maxx}",
+                maxy=f",{maxy}",
+                width_height=width_height,
                 format_=format_,
             )
             r = get(
@@ -334,7 +333,7 @@ class Crop:
             r = post(
                 stac_crop_url_post,
                 params=query,
-                json=self.query_params.feature,
+                json=feature,
                 headers=headers,
             )
 

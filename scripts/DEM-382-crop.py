@@ -80,18 +80,17 @@ return_mask = None
 algorithm = None
 algorithm_params = None
 
-# %% Perform CropPreValidation (maybe run once before running Statistics for a number of geometries or date ranges)
-collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
 
-query_params = QueryParamsCrop(
+# %% 1. Single asset, no geojson, default GSD
+query_params_1 = QueryParamsCrop(
     url=url,
-    feature=feature,
-    height=height,
-    width=width,
-    gsd=gsd,
-    format_=format_,
-    assets=assets,  # ["nir"]
-    expression=collection_ndvi.expression,  # "(nir-red)/(nir+red)"
+    feature=None,
+    height=None,
+    width=None,
+    gsd=None,
+    format_=".tif",
+    assets=["nir"],  # ["nir"]
+    expression=None,  # collection_ndvi.expression = "(nir-red)/(nir+red)"
     asset_as_band=asset_as_band,
     asset_bidx=asset_bidx,
     coord_crs=coord_crs,
@@ -108,13 +107,37 @@ query_params = QueryParamsCrop(
     algorithm_params=algorithm_params,
 )
 
-crop_preval = CropPreValidation(query_params, titiler_endpoint=TITILER_ENDPOINT)
-# Raises an AssertionError if any of the assets are not available for the query_params
-# If you get a message "StatisticsPreValidation passed: all required assets are available.", you can proceed to Statistics
+# %% 1a. Request Crop data - no mask
+crop_1a = Crop(
+    query_params=query_params_1,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
 
-# %% Now actually request Statistics - for only arable pixels (whitelist=True)!
-crop_arable_wlist = Crop(
-    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+r = crop_1a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+
+# %% 2. Single asset as expression (to enable masking), no geojson, default GSD
+query_params_2 = QueryParamsCrop(
+    url=url, feature=None, gsd=None, format_=".tif", assets=None, expression="nir", asset_as_band=asset_as_band
+)
+
+# %% 2a. Request Crop data - no mask
+crop_2a = Crop(
+    query_params=query_params_2,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
+
+r = crop_2a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 2b. Request Crop data - for arable pixels only
+crop_2b = Crop(
+    query_params=query_params_2,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
     mask_enum=Sentinel2_SCL_Group.ARABLE,
@@ -122,4 +145,157 @@ crop_arable_wlist = Crop(
     whitelist=True,
 )
 
-json_arable_wlist = crop_arable_wlist.response.json()
+r = crop_2b.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 3. NDVI, Crop by geojson, default GSD
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
+query_params_3 = QueryParamsCrop(
+    url=url,
+    feature=feature,
+    gsd=None,
+    format_=".tif",
+    assets=None,
+    expression=collection_ndvi.expression,
+    asset_as_band=asset_as_band,
+)
+
+crop_preval = CropPreValidation(query_params_3, titiler_endpoint=TITILER_ENDPOINT)
+
+# %% 3a. Request Crop data - no mask
+crop_3a = Crop(
+    query_params=query_params_3,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
+
+r = crop_3a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 3b. Request Crop data - for arable pixels only
+crop_3b = Crop(
+    query_params=query_params_3,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+r = crop_3b.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 4. NDVI, Crop by geojson, 10 m GSD
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
+query_params_4 = QueryParamsCrop(
+    url=url,
+    feature=feature,
+    gsd=10,
+    format_=".tif",
+    assets=None,
+    expression=collection_ndvi.expression,
+    asset_as_band=asset_as_band,
+)
+
+crop_preval = CropPreValidation(query_params_4, titiler_endpoint=TITILER_ENDPOINT)
+
+# %% 4a. Request Crop data - no mask
+crop_4a = Crop(
+    query_params=query_params_4,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
+
+r = crop_4a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 4b. Request Crop data - for arable pixels only
+crop_4b = Crop(
+    query_params=query_params_4,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+r = crop_4b.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+
+# %% 5. NDVI, Crop by geojson, 100 m GSD, jpg
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
+query_params_5 = QueryParamsCrop(
+    url=url,
+    feature=feature,
+    gsd=100,
+    format_=".jpg",
+    assets=None,
+    expression=collection_ndvi.expression,
+    asset_as_band=asset_as_band,
+)
+
+crop_preval = CropPreValidation(query_params_5, titiler_endpoint=TITILER_ENDPOINT)
+
+# %% 5a. Request Crop data - no mask
+crop_5a = Crop(
+    query_params=query_params_5,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
+
+r = crop_5a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+# %% 5b. Request Crop data - for arable pixels only
+crop_5b = Crop(
+    query_params=query_params_5,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+r = crop_5b.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+
+# 6. %% Now format the raw response data into something we can work with
+# NDVI, Crop by geojson, 10 m GSD, tif
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
+query_params_6 = QueryParamsCrop(
+    url=url,
+    feature=feature,
+    gsd=10,
+    format_=".tif",
+    assets=None,
+    expression=collection_ndvi.expression,
+    asset_as_band=asset_as_band,
+)
+
+crop_preval = CropPreValidation(query_params_5, titiler_endpoint=TITILER_ENDPOINT)
+
+# %% 6a. Request Crop data and open as geotiff
+crop_6a = Crop(
+    query_params=query_params_6,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=None,
+)
+
+r = crop_6a.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+
+
+# json_arable_wlist = crop_arable_wlist.response.json()
+
+# %%
