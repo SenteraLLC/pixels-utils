@@ -1,6 +1,8 @@
 # %% Imports
 import logging
 
+from rasterio import Env
+from rasterio.io import MemoryFile
 from utils.logging.tqdm import logging_init
 
 from pixels_utils.scenes import parse_nested_stac_data, request_asset_info, search_stac_scenes
@@ -267,7 +269,7 @@ r = crop_5b.response
 print(f"Response status code: {r.status_code}")
 print(f"Response size: {len(r.content)} bytes")
 
-# 6. %% Now format the raw response data into something we can work with
+# %% 6. Now format the raw response data into something we can work with
 # NDVI, Crop by geojson, 10 m GSD, tif
 collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
 
@@ -294,6 +296,12 @@ crop_6a = Crop(
 r = crop_6a.response
 print(f"Response status code: {r.status_code}")
 print(f"Response size: {len(r.content)} bytes")
+
+with Env(), MemoryFile(r.content) as m:
+    ds = m.open()
+    data = ds.read(masked=False)
+    profile = ds.profile
+    tags = ds.tags()
 
 
 # json_arable_wlist = crop_arable_wlist.response.json()
