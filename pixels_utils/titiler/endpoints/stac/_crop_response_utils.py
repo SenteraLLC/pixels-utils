@@ -1,9 +1,11 @@
+from io import BytesIO
 from typing import Dict, Iterable, Tuple, Union
 
 import numpy.ma as ma
 from numpy import count_nonzero as np_count_nonzero
 from numpy import expand_dims as np_expand_dims
 from numpy import isin as np_isin
+from numpy import load as np_load
 from numpy import logical_not as np_logical_not
 from numpy import min_scalar_type as np_min_scalar_type
 from numpy import ndarray as np_ndarray
@@ -13,8 +15,9 @@ from numpy.ma import count as npma_count
 from numpy.ma import count_masked as npma_count_masked
 from numpy.typing import ArrayLike, DTypeLike
 from rasterio import Env
+from rasterio.errors import RasterioIOError
 from rasterio.io import DatasetReader, MemoryFile
-from rasterio.profiles import Profile
+from rasterio.profiles import DefaultGTiffProfile, Profile
 
 from pixels_utils.constants.types import STAC_crop
 from pixels_utils.rasterio_helper import ensure_data_profile_consistency, save_image
@@ -161,11 +164,16 @@ def parse_crop_response(r: STAC_crop, **kwargs) -> Tuple[ArrayLike, Profile]:
     read_kwargs["out_dtype"] = kwargs.get("dtype") if "dtype" in kwargs.keys() else None
     read_kwargs = {k: v for k, v in read_kwargs.items() if v is not None}
 
-    with Env(), response_to_rasterio(r) as ds:
-        data = ds.read(masked=False, **read_kwargs)
-        profile = ds.profile
-        profile["band_names"] = kwargs.get("band_names") if "band_names" in kwargs.keys() else None
-        tags = ds.tags()
+    try:
+        with Env(), response_to_rasterio(r) as ds:
+            data = ds.read(masked=False, **read_kwargs)
+            profile = ds.profile
+            profile["band_names"] = kwargs.get("band_names") if "band_names" in kwargs.keys() else None
+            tags = ds.tags()
+    except RasterioIOError:
+        data = np_load(BytesIO(r.content))
+        # TODO: ensure_data_profile_consistency()
+        profile, tags = DefaultGTiffProfile(), {}  # npy doesn't provide profile information
 
     nodata = kwargs.get("nodata")  # gets value if key exists, else sets to None
     data_mask, profile_mask = crop_set_mask(data, profile, nodata=nodata)

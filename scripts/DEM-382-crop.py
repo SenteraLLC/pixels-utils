@@ -276,15 +276,16 @@ r = crop_5b.response
 print(f"Response status code: {r.status_code}")
 print(f"Response size: {len(r.content)} bytes")
 
-# %% 6. Now format the raw response data into something we can work with
+# %% 6. Now format the raw response data into geotiff: https://developmentseed.org/titiler/output_format/
 # NDVI, Crop by geojson, 10 m GSD, tif
 collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
 
+format_ = ".tif"
 query_params_6 = QueryParamsCrop(
     url=url,
     feature=feature,
     gsd=10,
-    format_=".tif",
+    format_=format_,
     assets=None,
     expression=collection_ndvi.expression,
     asset_as_band=asset_as_band,
@@ -313,6 +314,41 @@ save_image(
     array=data_mask,
     profile=profile_mask,
     fname_out=Path(join(temp_dir, f"ndvi-{scene_id}.tif")),
+    driver="Gtiff",
+    interleave=None,
+    keep_xml=False,
+)
+
+
+# %% Change the fomrat from tif to numpy and make new request
+format_ = ".npy"
+query_params_6.format_ = format_
+
+crop_preval = CropPreValidation(query_params_6, titiler_endpoint=TITILER_ENDPOINT)
+
+# %% 6b. Request Crop data and save as numpy
+crop_6b = Crop(
+    query_params=query_params_6,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    clear_cache=True,
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=False,
+)
+
+r = crop_6b.response
+print(f"Response status code: {r.status_code}")
+print(f"Response size: {len(r.content)} bytes")
+
+data_mask, profile_mask, tags = parse_crop_response(
+    r=r,
+    **{"dtype": float32, "band_names": [collection_ndvi.short_name], "band_description": [collection_ndvi.short_name]},
+)
+
+save_image(
+    array=data_mask,
+    profile=profile_mask,
+    fname_out=Path(join(temp_dir, f"ndvi-{scene_id}{format_}")),
     driver="Gtiff",
     interleave=None,
     keep_xml=False,
