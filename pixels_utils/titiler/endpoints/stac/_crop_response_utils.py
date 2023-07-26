@@ -15,8 +15,8 @@ from rasterio.errors import RasterioIOError
 from rasterio.io import DatasetReader, MemoryFile
 from rasterio.profiles import DefaultGTiffProfile, Profile
 
-from pixels_utils.constants.types import STAC_crop
-from pixels_utils.rasterio_helper import ensure_data_profile_consistency, save_image
+from pixels_utils.rasterio_helper import ensure_data_profile_consistency
+from pixels_utils.titiler.endpoints.stac._crop import STAC_crop
 
 
 def _crop_set_mask(data: ArrayLike, profile: Profile, nodata: Union[float, int] = 0) -> tuple[np_ndarray, Profile]:
@@ -144,11 +144,3 @@ def rescale_stac_crop(data: ArrayLike, rescale: Iterable[str], dtype: DTypeLike)
     else:
         raise RuntimeError("<rescale> argument must be the same length as data ({data.shape[0]}).")
     return data_scaled
-
-
-def write_to_file(path: str, data: ArrayLike, profile: Profile):
-    """
-    path = "/mnt/c/Users/Tyler/Downloads/test2.tif"
-    """
-    # data_out = data[0]
-    save_image(data, profile, path, driver="Gtiff", keep_xml=False)

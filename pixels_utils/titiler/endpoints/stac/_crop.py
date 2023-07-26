@@ -160,7 +160,7 @@ class CropPreValidation:
             list(
                 set(
                     filter(
-                        None, [i for i in re.sub("\W+", ",", expression).split(",") if not i.isdigit()]  # noqa: W605
+                        None, [i for i in re.sub(r"\W+", ",", expression).split(",") if not i.isdigit()]  # noqa: W605
                     )
                 )
             )
