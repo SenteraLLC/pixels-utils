@@ -16,7 +16,7 @@ from rasterio.io import DatasetReader, MemoryFile
 from rasterio.profiles import DefaultGTiffProfile, Profile
 
 from pixels_utils.rasterio_helper import ensure_data_profile_consistency
-from pixels_utils.titiler.endpoints.stac._crop import STAC_crop
+from pixels_utils.titiler.endpoints.stac.types import STAC_crop
 
 
 def _crop_set_mask(data: ArrayLike, profile: Profile, nodata: Union[float, int] = 0) -> tuple[np_ndarray, Profile]:

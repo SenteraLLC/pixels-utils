@@ -3,14 +3,14 @@ import re
 from dataclasses import field
 from enum import Enum
 from functools import cached_property
-from typing import Any, ClassVar, List, NewType, Type, Union
+from typing import Any, ClassVar, List, Type, Union
 
 from joblib import Memory  # type: ignore
 from marshmallow import Schema, ValidationError, validate, validates, validates_schema
 from marshmallow_dataclass import dataclass
 from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
-from requests import Response, get, post
+from requests import get, post
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
@@ -19,9 +19,9 @@ from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
+from pixels_utils.titiler.endpoints.stac.types import STAC_statistics
 from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 
-STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 STAC_STATISTICS_ENDPOINT = f"{STAC_ENDPOINT}/statistics"
 

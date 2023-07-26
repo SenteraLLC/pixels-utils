@@ -3,7 +3,7 @@ import re
 from dataclasses import field
 from enum import Enum
 from functools import cached_property
-from typing import Any, ClassVar, Dict, List, NewType, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, List, Tuple, Type, Union
 
 from geo_utils.world import round_coordinate
 from joblib import Memory  # type: ignore
@@ -13,7 +13,7 @@ from numpy.typing import ArrayLike
 from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from rasterio.profiles import Profile
-from requests import Response, get, post
+from requests import get, post
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
@@ -21,11 +21,11 @@ from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
-from pixels_utils.titiler.endpoints.stac._crop_response_utils import parse_crop_response
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
+from pixels_utils.titiler.endpoints.stac.crop._crop_response_utils import parse_crop_response
+from pixels_utils.titiler.endpoints.stac.types import STAC_crop
 from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 
-STAC_crop = NewType("STAC_crop", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 STAC_CROP_ENDPOINT = f"{STAC_ENDPOINT}/crop"
 STAC_CROP_URL_GET = "{crop_endpoint}{minx}{miny}{maxx}{maxy}{width_height}{format_}"

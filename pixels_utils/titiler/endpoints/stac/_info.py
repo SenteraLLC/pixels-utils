@@ -1,12 +1,12 @@
 import logging
 from functools import cached_property
-from typing import ClassVar, List, NewType, Tuple, Type
+from typing import ClassVar, List, Tuple, Type
 
 from joblib import Memory  # type: ignore
 from marshmallow import Schema, ValidationError, validates
 from marshmallow_dataclass import dataclass
 from pandas import DataFrame
-from requests import Response, get
+from requests import get
 from retry import retry
 
 from pixels_utils.stac_metadata import STACMetaData
@@ -14,8 +14,8 @@ from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import validate_assets
+from pixels_utils.titiler.endpoints.stac.types import STAC_info
 
-STAC_info = NewType("STAC_info", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
 QUERY_ASSETS = "assets"
 QUERY_URL = "url"
