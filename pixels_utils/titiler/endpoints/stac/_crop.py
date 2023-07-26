@@ -3,14 +3,16 @@ import re
 from dataclasses import field
 from enum import Enum
 from functools import cached_property
-from typing import Any, ClassVar, List, NewType, Type, Union
+from typing import Any, ClassVar, Dict, List, NewType, Tuple, Type, Union
 
 from geo_utils.world import round_coordinate
 from joblib import Memory  # type: ignore
 from marshmallow import Schema, ValidationError, validate, validates, validates_schema
 from marshmallow_dataclass import dataclass
+from numpy.typing import ArrayLike
 from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
+from rasterio.profiles import Profile
 from requests import Response, get, post
 from retry import retry
 
@@ -19,6 +21,7 @@ from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
+from pixels_utils.titiler.endpoints.stac._crop_response_utils import parse_crop_response
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
 from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 
@@ -340,3 +343,18 @@ class Crop:
         if r.status_code != 200:
             logging.warning("Crop %s request failed. Reason: %s", r.request.method, r.reason)
         return STAC_crop(r)
+
+    def to_rasterio(self, **kwargs) -> Tuple[ArrayLike, Profile, Dict]:
+        """
+        Convert STAC crop response to rasterio objects (array, profile, tags).
+
+        Returns:
+            Tuple[ArrayLike, Profile, Dict]: Output rasterio objects.
+        """
+        # TODO: Consider validating kwargs before passing to parse_crop_response()
+        data_mask, profile_mask, tags = parse_crop_response(
+            r=self.response,
+            **kwargs
+            # **{"dtype": float32, "band_names": [collection_ndvi.short_name], "band_description": [collection_ndvi.short_name]},
+        )
+        return data_mask, profile_mask, tags
