@@ -161,9 +161,7 @@ stats_all = Statistics(
     query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
-    mask_enum=None,
-    mask_asset=None,
-    whitelist=None,
+    mask_enum=None,  # mask_asset and whitelist are ignored if mask_enum is None
 )
 
 json_all = stats_all.response.json()
