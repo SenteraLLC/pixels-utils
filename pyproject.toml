@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pixels-utils"
-version = "0.2.0"
+version = "0.3.0"
 description = "A python wrapper to [Sentera's public Titiler imagery API](https://pixels.sentera.com). The main purpose is to provide more direct access to the Pixels API via common data science libraries (like Rasterio and GeoPandas)."
 authors = []
 exclude = ["pixels_utils/tests/data/*"]
