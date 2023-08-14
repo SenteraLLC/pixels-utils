@@ -1,9 +1,12 @@
 # %% Imports
 from datetime import datetime
+from os import getenv
 from os.path import join as os_join
 from pathlib import Path
 from pickle import HIGHEST_PROTOCOL
 from pickle import dump as pickle_dump
+
+from dotenv import load_dotenv
 
 from pixels_utils.scenes import request_asset_info, search_stac_scenes
 from pixels_utils.stac_catalogs.earthsearch.v1 import (
@@ -16,9 +19,12 @@ from pixels_utils.titiler import TITILER_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL, Sentinel2_SCL_Group
 
+c = load_dotenv()
 # %% Settings
+git_dir = getenv("GIT_DIR")
+
 DATA_ID = 1
-OUTPUT_DIR = Path("/home/tyler/git/pixels-utils/pixels_utils/tests/data/")
+OUTPUT_DIR = Path(os_join(git_dir, "pixels_utils/tests/data"))
 EARTHSEARCH_VER = "v1"  # "v0" or "v1"
 
 geojson = sample_feature(DATA_ID)
@@ -129,9 +135,7 @@ stats_all = Statistics(
     query_params=query_params,
     clear_cache=True,
     titiler_endpoint=TITILER_ENDPOINT,
-    mask_enum=None,
-    mask_asset=None,
-    whitelist=None,
+    mask_enum=None,  # mask_asset and whitelist are ignored if mask_enum is None
 )
 
 stats_arable_wlist = Statistics(

@@ -81,9 +81,7 @@ class Test_Titiler_Endpoint_Stac_Statistics_Expression_NDVI:
                 query_params=self.QUERY_PARAMS,
                 clear_cache=True,
                 titiler_endpoint=TITILER_ENDPOINT,
-                mask_enum=None,
-                mask_asset=None,
-                whitelist=None,
+                mask_enum=None,  # mask_asset and whitelist are ignored if mask_enum is None
             )
             r.should.be.a(Response)
             list(r.json().keys()).should.equal(["type", "geometry", "properties"])
