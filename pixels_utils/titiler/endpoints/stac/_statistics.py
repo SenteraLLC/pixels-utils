@@ -1,6 +1,7 @@
 import logging
 import re
 from dataclasses import field
+from enum import Enum
 from functools import cached_property
 from typing import Any, ClassVar, List, NewType, Type, Union
 
@@ -18,6 +19,7 @@ from pixels_utils.titiler.endpoints import STAC_ENDPOINT
 from pixels_utils.titiler.endpoints.stac import Info
 from pixels_utils.titiler.endpoints.stac._connect import online_status_stac
 from pixels_utils.titiler.endpoints.stac._utilities import to_pixel_dimensions
+from pixels_utils.titiler.mask._mask import build_numexpr_mask_enum
 
 STAC_statistics = NewType("STAC_statistics", Response)
 STAC_INFO_ENDPOINT = f"{STAC_ENDPOINT}/info"
@@ -39,7 +41,7 @@ class QueryParamsStatistics:
     expression: str = None
     asset_as_band: bool = None
     asset_bidx: List[str] = None
-    coord_crs: str = None  # CRS.from_epsg(4326).to_string()  # TODO: How to pass as a CRS type?
+    coord_crs: str = None  # CRS.from_epsg(4326).to_string()
     max_size: int = None
     height: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
     width: int = field(default=None, metadata=dict(validate=validate.Range(min=1)))
@@ -182,7 +184,6 @@ class StatisticsPreValidation:
         # )  # Should issue a warning if "nodata" not available for collection
 
 
-@memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Statistics:
     """
@@ -211,8 +212,9 @@ class Statistics:
         query_params: QueryParamsStatistics,
         clear_cache: bool = False,
         titiler_endpoint: str = TITILER_ENDPOINT,
-        # mask_scl: ArrayLike = None,
-        # whitelist: bool = True,
+        mask_enum: List[Enum] = None,
+        mask_asset: str = None,
+        whitelist: bool = True,
     ):
         self.query_params = query_params
         self.serialized_query_params = QueryParamsStatistics.Schema().dump(
@@ -221,8 +223,9 @@ class Statistics:
 
         self.clear_cache = clear_cache
         self.titiler_endpoint = titiler_endpoint
-        # self.mask_scl = mask_scl
-        # self.whitelist = whitelist
+        self.mask_enum = mask_enum
+        self.mask_asset = mask_asset
+        self.whitelist = whitelist
 
         errors = QueryParamsStatistics.Schema().validate(self.serialized_query_params)
         if errors:
@@ -243,6 +246,23 @@ class Statistics:
         )
         _ = self.serialized_query_params.pop("gsd", None)  # Delete gsd from serialized_query_params
 
+        # Note: Assets do not do not accept numexpr functions
+        if self.mask_enum is not None and self.serialized_query_params["assets"] is not None:
+            logging.warning(
+                "`assets` do not accept numexpr functions, so `mask_enum` will be ignored. Use `expression` instead."
+            )
+        if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
+            logging.info("Adding masking parameters to `expression`.")
+            self.serialized_query_params["expression"] = build_numexpr_mask_enum(
+                expression=self.serialized_query_params["expression"],
+                mask_enum=self.mask_enum,
+                whitelist=self.whitelist,
+                mask_value=self.serialized_query_params["nodata"],
+                mask_asset=self.mask_asset,
+            )
+            self.serialized_query_params["nodata"] = (
+                0.0 if self.serialized_query_params["nodata"] is None else self.serialized_query_params["nodata"]
+            )
         # self.geometry = shapely_to_geojson_geometry(geojson_to_shapely(self.query_params.feature))
         self.response
 
@@ -259,11 +279,8 @@ class Statistics:
         online_status_stac(self.titiler_endpoint, stac_endpoint=self.query_params.url)
         # query = generate_base_query(**self.serialized_query_params)
         query = {k: v for k, v in self.serialized_query_params.items() if v is not None}
-        # TODO: Consider mask_scl and whitelist, adjusting assets and/or expression accordingly
-        if self.clear_cache is True:
-            headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
-        else:
-            headers = {}
+
+        headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"} if self.clear_cache is True else {}
 
         if self.query_params.feature is None:
             logging.debug(

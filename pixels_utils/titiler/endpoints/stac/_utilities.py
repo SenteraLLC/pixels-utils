@@ -126,8 +126,7 @@ def validate_assets(
     if check_individual_asset_availability:
         item_url = url
         item = item_url.split("/")[-1]
-        # TODO: Do we want to remove unavailable assets, or just issue warnings to let user know which are unavailable?
-        assets_all = tuple([a for a in assets]) if assets else asset_names
+        assets_all = tuple([a for a in assets]) if assets else asset_names  # Remove unavailable assets
         assets_available = []
         for asset in assets_all:
             if is_asset_available(item_url=item_url, asset=asset, stac_info_endpoint=stac_info_endpoint):

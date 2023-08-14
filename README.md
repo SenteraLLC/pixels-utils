@@ -67,19 +67,18 @@ if __name__ == "__main__":
 ## Usage Example
 
 ### Example 1 - Find all the scenes available for a geometry within a date range
-
-<h5 a><strong><code>pixels_utils_scene_search.py</code></strong></h5>
+[scripts/scene_search.py](https://github.com/SenteraLLC/pixels-utils/blob/main/scripts/scene_search.py)
 
 ```python
-from pixels_utils.tests.data.load_data import sample_geojson
-from pixels_utils.scenes import search_stac_scenes
+from pixels_utils.tests.data.load_data import sample_feature
+from pixels_utils.scenes import parse_nested_stac_data, search_stac_scenes
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_URL, EarthSearchCollections
 
 
 DATA_ID = 1
 
 df_scenes = search_stac_scenes(
-    geometry=sample_geojson(DATA_ID),
+    geometry=sample_feature(DATA_ID),
     date_start="2019-01-01",
     date_end="2019-01-31",
     stac_catalog_url=EARTHSEARCH_URL,
@@ -88,7 +87,15 @@ df_scenes = search_stac_scenes(
     simplify_to_bbox=True,
 )
 
-print(df_scenes[["id", "datetime", "eo:cloud_cover"]].to_markdown(tablefmt="pipe"))
+print(
+    df_scenes[["id"]]
+    .merge(
+        parse_nested_stac_data(df=df_scenes, column="properties")[["datetime", "eo:cloud_cover"]],
+        left_index=True,
+        right_index=True,
+    )
+    .to_markdown(tablefmt="pipe")
+)
 ```
 
 <h5 a><code>[OUTPUT]</code></h5>
@@ -99,65 +106,89 @@ print(df_scenes[["id", "datetime", "eo:cloud_cover"]].to_markdown(tablefmt="pipe
 |  1 | S2A_10TGS_20190110_0_L2A | 2019-01-10T19:01:32.811000Z |          61.8212 |
 |  2 | S2B_10TGS_20190125_0_L2A | 2019-01-25T19:01:37.534000Z |          55.6444 |
 
-
 ### Example 2 - Get cloud-masked statistics for a geometry
-
-<h5 a><strong><code>pixels_utils_statistics_geojson.py</code></strong></h5>
+[scripts/statistics.py](https://github.com/SenteraLLC/pixels-utils/blob/main/scripts/statistics.py)
 
 ``` python
-from pixels_utils.endpoints.stac import statistics
-from pixels_utils.constants.sentinel2 import (
-    ELEMENT84_L2A_SCENE_URL_V0,
-    SENTINEL_2_L2A_COLLECTION,
-    EXPRESSION_NDVI,
-)
-from pixels_utils.constants.titiler import ENDPOINT_STATISTICS
-from pixels_utils.mask import SCL
-from pixels_utils.tests.data import sceneid, sample_geojson
-from pixels_utils.utilities import _check_assets_expression
+from pixels_utils.stac_catalogs.earthsearch.v1 import expression_from_collection, EarthSearchCollections
+from pixels_utils.tests.data.load_data import sample_feature, sample_scene_url
+from pixels_utils.titiler import TITILER_ENDPOINT
+from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics, StatisticsPreValidation
+from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL_Group
 
-scene_url = ELEMENT84_L2A_SCENE_URL_V0.format(
-    collection=SENTINEL_2_L2A_COLLECTION, sceneid=sceneid
-)
-assets=None
-expression=EXPRESSION_NDVI
-mask_scl = [SCL.VEGETATION, SCL.BARE_SOIL]
-geojson = sample_geojson()["features"][0]
-whitelist=True
-nodata=None
+DATA_ID = 1
 
-r = statistics(
-    scene_url,
-    assets=assets,
-    expression=expression,
-    geojson=geojson,
-    mask_scl=mask_scl,
-    whitelist=whitelist,
-    nodata=nodata,
+scene_url = sample_scene_url(data_id=DATA_ID)
+
+collection_ndvi = expression_from_collection(collection=EarthSearchCollections.sentinel_2_l2a, spectral_index="NDVI")
+
+query_params = QueryParamsStatistics(
+    url=scene_url,
+    feature=sample_feature(DATA_ID),
+    assets=None,  # ["nir"]
+    expression=collection_ndvi.expression,  # "(nir-red)/(nir+red)"
+    asset_as_band=True,
+    asset_bidx=None,
+    coord_crs=None,
+    max_size=None,
+    height=None,
+    width=None,
+    gsd=None,
+    nodata=None,
+    unscale=None,
+    resampling=None,
+    categorical=None,
+    c=None,
+    p=None,
+    histogram_bins=None,
+    histogram_range=None,
 )
 
-pprint(r.json()["properties"][ENDPOINT_STATISTICS])
+# Raises an AssertionError if any of the assets are not available for the query_params
+# If you get a message "StatisticsPreValidation passed: all required assets are available.", you can proceed to Statistics
+stats_preval = StatisticsPreValidation(query_params, titiler_endpoint=TITILER_ENDPOINT)
+
+
+# Now actually request Statistics - for only arable pixels (whitelist=True)!
+stats_arable_wlist = Statistics(
+    query_params=query_params,  # collection_ndvi.expression - "(nir-red)/(nir+red)"
+    titiler_endpoint=TITILER_ENDPOINT,
+    mask_enum=Sentinel2_SCL_Group.ARABLE,
+    mask_asset="scl",
+    whitelist=True,
+)
+
+stats_arable_wlist.response.json()
 ```
 
 <h5 a><code>[OUTPUT]</code></h5>
 
-``` python
-{'where(SCL == 4, (B08-B04)/(B08+B04), where(SCL == 5, (B08-B04)/(B08+B04), 0.0))': {
-    'count': 1021.0,
-    'histogram': [<omitted for brevity>],
-    'majority': 0.14285714285714285,
-    'masked_pixels': 1487.0,
+```python
+root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "red".
+root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "nir".
+root - INFO - StatisticsPreValidation PASSED. All required assets are available.
+root - INFO - Adding masking parameters to `expression`.
+{'type': 'Feature',
+ 'geometry': {'type': 'MultiPolygon',
+  'coordinates': [[[[-119.036182, 46.239917],
+     [-119.044517, 46.237081],
+     [-119.044048, 46.239172],
+     [-119.0413, 46.240763],
+     [-119.036182, 46.239917]]]]},
+ 'properties': {'statistics': {'where(scl==4,(nir-red)/(nir+red),where(scl==5,(nir-red)/(nir+red),0.0))': {'min': 0.105562855891371,
     'max': 0.24060150375939848,
-    'mean': 0.14380032393285688,
+    'mean': 0.14380639335058598,
+    'count': 1021.0,
+    'sum': 146.82632761094828,
+    'std': 0.01212996991547649,
     'median': 0.14462416745956233,
-    'min': 0.105562855891371,
+    'majority': 0.14285714285714285,
     'minority': 0.105562855891371,
-    'percentile_2': 0.11589278323054499,
-    'percentile_98': 0.16414680642034107,
-    'std': 0.0121265938833696,
-    'sum': 146.82013073544687,
-    'unique': 802.0,
+    'unique': 801.0,
+    'histogram': [<omitted for brevity>],
     'valid_percent': 40.71,
-    'valid_pixels': 1021.0
-}}
+    'masked_pixels': 1487.0,
+    'valid_pixels': 1021.0,
+    'percentile_98': 0.16414680642034107,
+    'percentile_2': 0.11589278323054499}}}}
 ```

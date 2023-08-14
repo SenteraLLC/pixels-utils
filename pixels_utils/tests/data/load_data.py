@@ -5,7 +5,7 @@ from pathlib import Path
 
 from geo_utils.vector import validate_geojson, validate_geojson_geometry
 
-from pixels_utils.stac_catalogs.earthsearch.v0 import EARTHSEARCH_SCENE_URL, EARTHSEARCH_URL, EarthSearchCollections
+from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_SCENE_URL, EARTHSEARCH_URL, EarthSearchCollections
 
 chdir(abspath(Path(__file__).resolve().parents[0]))
 
@@ -21,7 +21,9 @@ def sample_sceneid(data_id=1):
 
 
 def sample_scene_url(data_id=1):
-    return EARTHSEARCH_SCENE_URL.format(collection=EARTHSEARCH_URL, id=sample_sceneid(data_id=1))
+    return EARTHSEARCH_SCENE_URL.format(
+        collection=EarthSearchCollections.sentinel_2_l2a.name, id=sample_sceneid(data_id=1)
+    )
 
 
 def sample_feature(data_id=1):

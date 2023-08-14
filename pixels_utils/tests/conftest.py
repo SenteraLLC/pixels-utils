@@ -47,55 +47,30 @@ def FEATURE_FIXTURE():
 
 @pytest.fixture(autouse=True, scope="function")
 def mock_scenes_earthsearch_v1():
-    def f(
-        fname_pickle=f"CLOUD-80_GEOM-1_MONTH-6.pickle",
-    ):
-        dir_name = os_join(DATA_DIR, "scenes")
-        return load_pickle(
-            fname_pickle,
-            os_join(
-                dir_name,
-                "earthsearch-v1",
-                "sentinel-2-l2a",
-            ),
-        )
+    def f(fname_pickle="CLOUD_80-GEOM_1-MONTH_6.pickle"):
+        COLLECTION_DIR = Path(os_join(DATA_DIR, "scenes", "earthsearch_v1", "sentinel-2-l2a"))
+        return load_pickle(fname_pickle, COLLECTION_DIR)
 
     return f
 
 
 @pytest.fixture(autouse=True, scope="function")
 def mock_scene_asset_info_earthsearch_v1():
-    def f(
-        fname_pickle=f"CLOUD-80_GEOM-1_MONTH-6_asset-info.pickle",
-    ):
-        dir_name = os_join(DATA_DIR, "scenes")
-        return load_pickle(
-            fname_pickle,
-            os_join(
-                dir_name,
-                "earthsearch-v1",
-                "sentinel-2-l2a",
-            ),
-        )
+    def f(fname_pickle="CLOUD_80-GEOM_1-MONTH_6-asset_info.pickle"):
+        COLLECTION_DIR = Path(os_join(DATA_DIR, "scenes", "earthsearch_v1", "sentinel-2-l2a"))
+        return load_pickle(fname_pickle, COLLECTION_DIR)
 
     return f
 
 
-# @pytest.fixture(autouse=True, scope="function")
-# def mock_endpoints_stac_statistics():
-#     def f(
-#         assets=None,
-#         expression=None,
-#         gsd=None,
-#         fname_pickle=f"geo_aoi1_scl_mask_None.pickle",
-#     ):
-#         dir_name = os_join(DATA_DIR, "statistics")
-#         assets_name = "MSI" if assets == ASSETS_MSI else "None"
-#         expression_name = "NDVI" if expression == EXPRESSION_NDVI else "None"
-#         folder = f"ASSETS_{assets_name}_EXPRESSION_{expression_name}_GSD_{gsd}"
-#         return load_pickle(
-#             fname_pickle,
-#             os_join(dir_name, folder),
-#         )
+@pytest.fixture(autouse=True, scope="function")
+def mock_statistics_earthsearch_v1():
+    # def mock_statistics_earthsearch_v1(data_id: int, name: str):
 
-#     return f
+    def f(data_id=1, name="stats_all"):
+        # def f(fname_pickle=fname_pickle):
+        fname_pickle = f"GEOM_{data_id}-SCENE_{sample_sceneid(data_id).upper()}-{name.upper()}.pickle"
+        COLLECTION_DIR = Path(os_join(DATA_DIR, "statistics", "earthsearch_v1", "sentinel-2-l2a", "expression_ndvi"))
+        return load_pickle(fname_pickle, COLLECTION_DIR)
+
+    return f
