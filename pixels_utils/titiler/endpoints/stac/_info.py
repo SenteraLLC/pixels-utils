@@ -37,6 +37,7 @@ class QueryParamsInfo:
             # TODO: How to set `data["assets"] = [data["assets"]] if isinstance(data["assets"], str) else data["assets"]``
 
 
+@memory.cache
 @retry((RuntimeError, KeyError), tries=3, delay=2)
 class Info:
     """

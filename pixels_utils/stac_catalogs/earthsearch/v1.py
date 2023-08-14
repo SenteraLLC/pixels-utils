@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum, IntEnum, auto
 from functools import cached_property
 
 from spyndex import indices as spyndex_indices
@@ -99,3 +99,33 @@ def expressions_from_collection(
             for spectral_index in spyndex_indices
         }
     )
+
+
+class SCL(IntEnum):
+    """Sentinel-2 L2A Scene Classification classes.
+
+    From https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-2-msi/level-2a/algorithm
+    """
+
+    NO_DATA = 0
+    SATURATED_OR_DEFECTIVE = 1
+    CAST_SHADOWS = 2
+    CLOUD_SHADOWS = 3
+    VEGETATION = 4
+    BARE_SOIL = 5
+    WATER = 6
+    UNCLASSIFIED = 7
+    CLOUD_MEDIUM_PROBABILITY = 8
+    CLOUD_HIGH_PROBABILITY = 9
+    THIN_CIRRUS = 10
+    SNOW_OR_ICE = 11
+
+
+SCL_GROUP_ARABLE = [SCL.VEGETATION, SCL.BARE_SOIL]
+SCL_GROUP_CLOUDS = [
+    SCL.CAST_SHADOWS,
+    SCL.CLOUD_SHADOWS,
+    SCL.CLOUD_MEDIUM_PROBABILITY,
+    SCL.CLOUD_HIGH_PROBABILITY,
+    SCL.THIN_CIRRUS,
+]
