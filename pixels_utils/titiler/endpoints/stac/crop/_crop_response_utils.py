@@ -39,7 +39,8 @@ def _crop_set_mask(data: ArrayLike, profile: Profile, nodata: Union[float, int] 
     Returns:
         tuple[np_ndarray, Profile]: Masked data array and corresponding Rasterio Profile.
     """
-    assert data.ndim == 3, f"Array must be 3-dimensional (passed array has {data.ndim} dimensions)."
+    if data.ndim != 3:
+        raise ValueError(f"Array must be 3-dimensional (passed array has {data.ndim} dimensions).")
     nodata = 0 if nodata is None else nodata
 
     # By default titiler will return a concatenated data,mask array.
@@ -131,7 +132,8 @@ def rescale_stac_crop(data: ArrayLike, rescale: Iterable[str], dtype: DTypeLike)
     data_scaled = zeros_like(data, dtype=dtype)
     if len(rescale) == data.shape[0]:
         for i, limits in enumerate(rescale):
-            assert len(limits.split(",")) == 2
+            if len(limits.split(",")) != 2:
+                raise ValueError(f"Rescale argument {limits} is not formatted properly (check docstring).")
             # l = int(limits.split(",")[0])
             # u = int(limits.split(",")[1])
             # scale_factor = 10000 / (u - l)
