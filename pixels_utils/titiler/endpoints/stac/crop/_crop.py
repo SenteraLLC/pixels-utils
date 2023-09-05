@@ -202,12 +202,16 @@ class Crop:
     See a list of available assets for the EarthSearch collections in this Confluence page:
     https://sentera.atlassian.net/wiki/spaces/GML/pages/3357278209/EarthSearch+Collection+Availability
 
-    Example:
-        TOOD: Add examples
-        https://pixels.sentera.com/stac/statistics?&assets=nir&feature=type&feature=geometry&feature=properties&url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2B_10TGS_20220608_0_L2A
-        https://pixels.sentera.com/stac/statistics?asset_as_band=True&expression=%28nir-red%29%2F%28nir%2Bred%29&feature=type&feature=geometry&feature=properties&url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2B_10TGS_20220608_0_L2A
+    Examples:
+        1. NIR asset for an entire Sentinel-2 L2A scene:
+            https://pixels.sentera.com/stac/crop/-91.749383,44.135251,-90.332379,45.146753.tif?url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2A_15TXK_20230622_0_L2A&assets=nir&asset_as_band=True
 
-    Args:
+        2. Sentinel-2 L2A NDVI expression for a cropped geometry
+            NOTE: data cannot be downloaded from raw URL; must read `response.content` (binary data) via rasterio (or
+            use`Crop.to_rasterio()` method directly)
+            https://pixels.sentera.com/stac/crop/53x47.tif?url=https%3A%2F%2Fearth-search.aws.element84.com%2Fv1%2Fcollections%2Fsentinel-2-l2a%2Fitems%2FS2A_15TXK_20230622_0_L2A&expression=where%28scl%3D%3D4%2C%28nir-red%29%2F%28nir%2Bred%29%2Cwhere%28scl%3D%3D5%2C%28nir-red%29%2F%28nir%2Bred%29%2C0.0%29%29%3B&asset_as_band=True&nodata=0.0
+
+        Args:
         query_params (QueryParamsCrop): The QueryParams to pass to the crop endpoint (see titiler docs for
         more information).
         clear_cache (bool, optional): Whether to clear the cache. Defaults to False.
