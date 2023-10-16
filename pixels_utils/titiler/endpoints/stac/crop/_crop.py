@@ -266,7 +266,7 @@ class Crop:
                 "`assets` do not accept numexpr functions, so `mask_enum` will be ignored. Use `expression` instead."
             )
         if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
-            logging.info("Adding masking parameters to `expression`.")
+            logging.debug("Adding masking parameters to `expression`.")
             self.serialized_query_params["expression"] = build_numexpr_mask_enum(
                 expression=self.serialized_query_params["expression"],
                 mask_enum=self.mask_enum,
