@@ -11,6 +11,7 @@ from marshmallow_dataclass import dataclass
 from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from requests import get, post
+from requests.exceptions import ConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
@@ -180,7 +181,7 @@ class StatisticsPreValidation:
         # )  # Should issue a warning if "nodata" not available for collection
 
 
-@retry((RuntimeError, KeyError), tries=3, delay=2)
+@retry((ConnectionError, KeyError, RuntimeError), tries=3, delay=2)
 class Statistics:
     """
     Class to help faciilitate titiler STAC statistics endpoint.
