@@ -167,7 +167,6 @@ stats_arable_wlist.response.json()
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "red".
 root - INFO - Item "S2B_10TGS_20220419_0_L2A" asset is AVAILABLE: "nir".
 root - INFO - StatisticsPreValidation PASSED. All required assets are available.
-root - INFO - Adding masking parameters to `expression`.
 {'type': 'Feature',
  'geometry': {'type': 'MultiPolygon',
   'coordinates': [[[[-119.036182, 46.239917],

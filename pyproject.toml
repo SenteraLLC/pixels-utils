@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pixels-utils"
-version = "0.4.0"
+version = "0.4.1"
 description = "A python wrapper to [Sentera's public Titiler imagery API](https://pixels.sentera.com). The main purpose is to provide more direct access to the Pixels API via common data science libraries (like Rasterio and GeoPandas)."
 authors = []
 exclude = ["pixels_utils/tests/data/*"]
@@ -22,7 +22,7 @@ marshmallow-dataclass = "^8.5.14"
 typeguard = "^4.0.0"
 spyndex = "^0.5.0"
 geo_utils = {git = "ssh://git@github.com/SenteraLLC/py-geo-utils.git", branch="main"}
-utils = {git = "ssh://git@github.com/SenteraLLC/py-utils.git", branch="master"}
+utils = {git = "ssh://git@github.com/SenteraLLC/py-utils.git", tag="v3.3.3"}
 python-dotenv = "^1.0.0"
 
 [tool.poetry.group.test.dependencies]

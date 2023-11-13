@@ -14,6 +14,7 @@ from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from rasterio.profiles import Profile
 from requests import get, post
+from requests.exceptions import ConnectionError as RequestsConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
@@ -191,7 +192,7 @@ class CropPreValidation:
         # )  # Should issue a warning if "nodata" not available for collection
 
 
-@retry((RuntimeError, KeyError), tries=3, delay=2)
+@retry((RequestsConnectionError, KeyError, RuntimeError), tries=3, delay=2)
 class Crop:
     """
     Class to help faciilitate titiler STAC crop / part endpoint.
@@ -266,7 +267,7 @@ class Crop:
                 "`assets` do not accept numexpr functions, so `mask_enum` will be ignored. Use `expression` instead."
             )
         if self.mask_enum is not None and self.serialized_query_params["expression"] is not None:
-            logging.info("Adding masking parameters to `expression`.")
+            logging.debug("Adding masking parameters to `expression`.")
             self.serialized_query_params["expression"] = build_numexpr_mask_enum(
                 expression=self.serialized_query_params["expression"],
                 mask_enum=self.mask_enum,
