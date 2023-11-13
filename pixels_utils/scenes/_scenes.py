@@ -7,7 +7,6 @@ from joblib import Memory  # type: ignore
 from pandas import DataFrame, Series
 from pystac_client import Client
 from requests import get
-from requests.exceptions import ConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_collections, _validate_geometry

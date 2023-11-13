@@ -14,7 +14,6 @@ from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from rasterio.profiles import Profile
 from requests import get, post
-from requests.exceptions import ConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry

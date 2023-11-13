@@ -7,7 +7,6 @@ from marshmallow import Schema, ValidationError, validates
 from marshmallow_dataclass import dataclass
 from pandas import DataFrame
 from requests import get
-from requests.exceptions import ConnectionError
 from retry import retry
 
 from pixels_utils.stac_metadata import STACMetaData
