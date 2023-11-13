@@ -14,6 +14,7 @@ from pyproj.crs import CRS, CRSError
 from rasterio.enums import Resampling
 from rasterio.profiles import Profile
 from requests import get, post
+from requests.exceptions import ConnectionError as RequestsConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_geometry
@@ -191,7 +192,7 @@ class CropPreValidation:
         # )  # Should issue a warning if "nodata" not available for collection
 
 
-@retry((ConnectionError, KeyError, RuntimeError), tries=3, delay=2)
+@retry((RequestsConnectionError, KeyError, RuntimeError), tries=3, delay=2)
 class Crop:
     """
     Class to help faciilitate titiler STAC crop / part endpoint.

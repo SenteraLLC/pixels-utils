@@ -7,6 +7,7 @@ from marshmallow import Schema, ValidationError, validates
 from marshmallow_dataclass import dataclass
 from pandas import DataFrame
 from requests import get
+from requests.exceptions import ConnectionError as RequestsConnectionError
 from retry import retry
 
 from pixels_utils.stac_metadata import STACMetaData
@@ -37,7 +38,7 @@ class QueryParamsInfo:
             # TODO: How to set `data["assets"] = [data["assets"]] if isinstance(data["assets"], str) else data["assets"]``
 
 
-@retry((ConnectionError, KeyError, RuntimeError), tries=3, delay=2)
+@retry((RequestsConnectionError, KeyError, RuntimeError), tries=3, delay=2)
 class Info:
     """
     Class to help faciilitate titiler STAC info endpoint.

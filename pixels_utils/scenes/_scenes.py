@@ -7,6 +7,7 @@ from joblib import Memory  # type: ignore
 from pandas import DataFrame, Series
 from pystac_client import Client
 from requests import get
+from requests.exceptions import ConnectionError as RequestsConnectionError
 from retry import retry
 
 from pixels_utils.scenes._utils import _validate_collections, _validate_geometry
@@ -18,7 +19,7 @@ memory.reduce_size()  # Pre-emptively reduce the cache on start-up (must be done
 
 
 @memory.cache
-@retry((ConnectionError, KeyError, RuntimeError), tries=3, delay=2)
+@retry((RequestsConnectionError, KeyError, RuntimeError), tries=3, delay=2)
 def search_stac_scenes(
     geometry: Any,
     date_start: Union[date, str],
