@@ -144,7 +144,11 @@ def get_satellite_expression_as_df(
             df_data = DataFrame(
                 data=sample_gen(
                     src,
-                    xy=list(gdf_fields_subset["geom"].apply(lambda geometry: geometry.centroid.coords[0])),
+                    xy=list(
+                        gdf_fields_subset[gdf_fields_subset.geometry.name].apply(
+                            lambda geometry: geometry.centroid.coords[0]
+                        )
+                    ),
                 ),
                 # columns=["ndvi"],
                 columns=[expression_obj.short_name],
@@ -156,7 +160,7 @@ def get_satellite_expression_as_df(
     df_data.insert(1, "datetime", scene["datetime"])
     df_data = concat(
         [
-            gdf_fields_subset[["site_name", "plot_id", "field_id", "geom_id"]].reset_index(drop=True),
+            gdf_fields_subset.reset_index(drop=True),
             df_data,
         ],
         axis=1,
