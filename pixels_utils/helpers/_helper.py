@@ -9,7 +9,7 @@ from rasterio.sample import sample_gen
 
 from pixels_utils.stac_catalogs.earthsearch.v1 import EARTHSEARCH_SCENE_URL, EarthSearchCollections, Expression
 from pixels_utils.titiler import TITILER_ENDPOINT
-from pixels_utils.titiler.endpoints.stac import Crop, QueryParamsCrop
+from pixels_utils.titiler.endpoints.stac.crop._crop import Crop, QueryParamsCrop
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL_Group
 
 
