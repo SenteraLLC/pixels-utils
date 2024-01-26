@@ -22,7 +22,7 @@ from pixels_utils.stac_catalogs.earthsearch.v1 import (
     Expression,
 )
 from pixels_utils.titiler import TITILER_ENDPOINT
-from pixels_utils.titiler.endpoints.stac import QueryParamsStatistics, Statistics
+from pixels_utils.titiler.endpoints.stac._statistics import QueryParamsStatistics, Statistics
 from pixels_utils.titiler.mask.enum_classes import Sentinel2_SCL_Group
 
 memory = Memory("/tmp/pixels-utils-cache/", bytes_limit=2**30, verbose=0)
