@@ -57,6 +57,8 @@ def expression_from_collection(
     Returns:
         Expression: The tailored Expression object.
     """
+    if spectral_index not in spyndex_indices.keys():
+        raise AssertionError(f"{spectral_index} is not a valid spectral index (must be available via spyndex.indices).")
     if collection._version != "v1":
         raise AssertionError(
             f"The `collection` and `expression_from_collection()` function versions do not match ({collection._version} vs "
@@ -104,9 +106,6 @@ def expression_from_collection(
         raise AssertionError(
             f'Assets for spectral index "{spectral_index}" are not available in collection "{collection}".'
         )
-    if spectral_index not in spyndex_indices.keys():
-        raise AssertionError(f"{spectral_index} is not a valid spectral index (must be available via spyndex.indices).")
-
     return expression
 
 
