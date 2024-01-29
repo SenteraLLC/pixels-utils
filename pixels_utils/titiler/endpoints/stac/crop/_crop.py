@@ -359,7 +359,7 @@ class Crop:
         # TODO: Consider validating kwargs before passing to parse_crop_response()
         data_mask, profile_mask, tags = parse_crop_response(
             r=self.response,
-            **kwargs
+            **kwargs,
             # **{"dtype": float32, "band_names": [collection_ndvi.short_name], "band_description": [collection_ndvi.short_name]},
         )
         return data_mask, profile_mask, tags
